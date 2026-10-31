@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111827">
+    <meta name="description" content="Explora y lee documentos PDF de la biblioteca Genuino desde cualquier dispositivo.">
+    <title>Genuino | Biblioteca digital</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" defer></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="app-shell">
+        <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
+        <aside class="sidebar" id="sidebar" aria-label="Navegación de la biblioteca">
+            <a class="brand" href="./" aria-label="Genuino, inicio">
+                <span class="brand-mark" aria-hidden="true">G</span>
+                <span>
+                    <strong>Genuino</strong>
+                    <small>Biblioteca digital</small>
+                </span>
+            </a>
+            <button class="sidebar-close icon-button" id="close-sidebar" type="button" aria-label="Cerrar navegación">
+                <span aria-hidden="true">×</span>
+            </button>
+
+            <div class="sidebar-section-label">MENÚ PRINCIPAL</div>
+            <nav class="side-navigation" id="side-navigation" aria-label="Secciones"></nav>
+            <a class="nav-link manager-link" id="local-manager-link" href="http://localhost/biblioteca_admin/" hidden>
+                <span class="nav-icon" aria-hidden="true">⚙</span>
+                <span>Gestionar biblioteca</span>
+            </a>
+
+            <div class="sidebar-note">
+                <span class="sidebar-note-icon" aria-hidden="true">i</span>
+                <div>
+                    <strong>Tu espacio de lectura</strong>
+                    <p>Selecciona un documento para abrirlo en el visor.</p>
+                </div>
+            </div>
+            <div class="sidebar-footer">GENUINO <span>·</span> LECTOR PDF</div>
+        </aside>
+
+        <div class="workspace">
+            <header class="topbar">
+                <div class="topbar-start">
+                    <button class="icon-button mobile-menu-button" id="toggle-sidebar" type="button"
+                            aria-label="Abrir navegación" aria-controls="sidebar" aria-expanded="false">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <div class="breadcrumb"><span>Biblioteca</span><span aria-hidden="true">/</span><strong id="breadcrumb-current">Catálogo</strong></div>
+                </div>
+                <label class="global-search">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+                    <span class="sr-only">Buscar documentos</span>
+                    <input id="book-search" type="search" placeholder="Buscar un libro o documento..." autocomplete="off">
+                    <kbd>/</kbd>
+                </label>
+            </header>
+
+            <main class="main-content">
+                <section class="page-heading" aria-labelledby="page-title">
+                    <div>
+                        <p class="eyebrow">LECTURA EN LÍNEA</p>
+                        <h1 id="page-title">Tu biblioteca, <span>a un clic.</span></h1>
+                        <p class="page-subtitle">Explora el catálogo y continúa leyendo desde cualquier dispositivo.</p>
+                    </div>
+                    <a class="cover-link" href="img/portada.jpg" target="_blank" rel="noopener noreferrer">
+                        <img src="img/portada.jpg" alt="" onerror="this.closest('.cover-link').hidden = true">
+                        <span>Explorar biblioteca <b aria-hidden="true">→</b></span>
+                    </a>
+                </section>
+
+                <section class="stats-grid" aria-label="Resumen del catálogo">
+                    <article class="stat-card">
+                        <span class="stat-icon stat-icon-blue" aria-hidden="true">▤</span>
+                        <div><span class="stat-label">DOCUMENTOS</span><strong id="book-count">0</strong><small>PDF disponibles</small></div>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-icon stat-icon-violet" aria-hidden="true">▣</span>
+                        <div><span class="stat-label">COLECCIONES</span><strong id="category-count">0</strong><small>Para explorar</small></div>
+                    </article>
+                    <article class="stat-card stat-card-note">
+                        <span class="online-indicator" aria-hidden="true"></span>
+                        <div><span class="stat-label">LECTURA</span><strong>En línea</strong><small>Sin instalar aplicaciones</small></div>
+                    </article>
+                </section>
+
+                <section id="catalog-view" aria-labelledby="catalog-title">
+                    <div class="section-heading">
+                        <div>
+                            <h2 id="catalog-title">Explora el catálogo</h2>
+                            <p id="catalog-summary">Selecciona un documento para comenzar a leer.</p>
+                        </div>
+                        <div class="catalog-tools">
+                            <label class="sr-only" for="category-filter">Filtrar por colección</label>
+                            <select id="category-filter" class="category-filter">
+                                <option value="all">Todas las colecciones</option>
+                            </select>
+                            <span class="result-count" id="result-count" aria-live="polite"></span>
+                        </div>
+                    </div>
+                    <div class="book-grid" id="book-grid"></div>
+                    <p class="catalog-notice" id="catalog-notice" role="status" hidden></p>
+                    <div class="empty-state" id="empty-state" hidden>
+                        <span aria-hidden="true">⌕</span>
+                        <h3>No encontramos documentos</h3>
+                        <p>Prueba con otro título o cambia el filtro de colección.</p>
+                    </div>
+                </section>
+
+                <section class="reader-view" id="reader-view" aria-labelledby="reader-title" hidden>
+                    <div class="reader-heading">
+                        <div class="reader-title-wrap">
+                            <button class="back-button" id="back-to-catalog" type="button">
+                                <span aria-hidden="true">←</span> Volver al catálogo
+                            </button>
+                            <h2 id="reader-title">Documento</h2>
+                            <p id="reader-meta"></p>
+                        </div>
+                        <div class="reader-actions">
+                            <a class="button button-secondary" id="open-original" href="#" target="_blank" rel="noopener noreferrer">
+                                <span aria-hidden="true">↗</span> Abrir PDF
+                            </a>
+                            <a class="button button-primary" id="download-pdf" href="#" download>
+                                <span aria-hidden="true">↓</span> Descargar
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="reader-toolbar" aria-label="Controles del documento">
+                        <div class="page-controls">
+                            <button class="icon-button" id="prev-page" type="button" aria-label="Página anterior" disabled>‹</button>
+                            <label class="page-input-label">
+                                <span class="sr-only">Número de página</span>
+                                <input id="page-input" type="number" min="1" value="1" inputmode="numeric">
+                            </label>
+                            <span class="page-total">de <strong id="page-count">—</strong></span>
+                            <button class="icon-button" id="next-page" type="button" aria-label="Página siguiente" disabled>›</button>
+                        </div>
+                        <div class="zoom-controls">
+                            <button class="icon-button" id="zoom-out" type="button" aria-label="Reducir zoom">−</button>
+                            <span id="zoom-label">Ajustar</span>
+                            <button class="icon-button" id="zoom-in" type="button" aria-label="Aumentar zoom">+</button>
+                            <button class="icon-button fullscreen-button" id="toggle-fullscreen" type="button" aria-label="Pantalla completa">⛶</button>
+                        </div>
+                    </div>
+
+                    <div class="pdf-stage" id="pdf-stage">
+                        <div class="reader-message" id="reader-message" role="status" aria-live="polite">
+                            <span class="loading-spinner" aria-hidden="true"></span>
+                            <strong>Cargando documento...</strong>
+                            <p>El archivo puede tardar un momento en abrir.</p>
+                        </div>
+                        <div class="reader-error" id="reader-error" role="alert" hidden>
+                            <span aria-hidden="true">!</span>
+                            <strong>No se pudo abrir este PDF</strong>
+                            <p id="reader-error-detail">Comprueba tu conexión e inténtalo de nuevo.</p>
+                            <button class="button button-secondary" id="retry-pdf" type="button">Reintentar</button>
+                        </div>
+                        <canvas id="pdf-render" aria-label="Página del documento PDF"></canvas>
+                    </div>
+                </section>
+
+                <footer class="page-footer">
+                    <span>Genuino · Biblioteca digital</span>
+                    <span>Todos los derechos reservados © Laura Zelada &amp; Cioran · 2026</span>
+                </footer>
+            </main>
+        </div>
+    </div>
+</body>
+</html>
