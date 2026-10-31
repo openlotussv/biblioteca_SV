@@ -22,7 +22,7 @@
                 </span>
             </a>
             <button class="sidebar-close icon-button" id="close-sidebar" type="button" aria-label="Cerrar navegación">
-                <span aria-hidden="true">×</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
             </button>
 
             <div class="sidebar-section-label">MENÚ PRINCIPAL</div>
@@ -45,9 +45,10 @@
         <div class="workspace">
             <header class="topbar">
                 <div class="topbar-start">
-                    <button class="icon-button mobile-menu-button" id="toggle-sidebar" type="button"
-                            aria-label="Abrir navegación" aria-controls="sidebar" aria-expanded="false">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <button class="icon-button sidebar-toggle-button" id="toggle-sidebar" type="button"
+                            aria-label="Plegar navegación" aria-controls="sidebar" aria-expanded="true">
+                        <svg class="desktop-sidebar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.75" y="4.75" width="16.5" height="14.5" rx="2.25"/><path d="M9 5v14m7-10-3 3 3 3"/></svg>
+                        <svg class="mobile-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                     <div class="breadcrumb"><span>Biblioteca</span><span aria-hidden="true">/</span><strong id="breadcrumb-current">Catálogo</strong></div>
                 </div>
@@ -62,12 +63,12 @@
             <main class="main-content">
                 <section class="page-heading" aria-labelledby="page-title">
                     <div>
-                        <p class="eyebrow">LECTURA EN LÍNEA</p>
-                        <h1 id="page-title">Tu biblioteca, <span>a un clic.</span></h1>
-                        <p class="page-subtitle">Explora el catálogo y continúa leyendo desde cualquier dispositivo.</p>
+                        <p class="eyebrow" id="page-eyebrow">LECTURA EN LÍNEA</p>
+                        <h1 id="page-title"><span id="page-title-main">Tu biblioteca,</span> <span id="page-title-accent">a un clic.</span></h1>
+                        <p class="page-subtitle" id="page-subtitle">Explora el catálogo y continúa leyendo desde cualquier dispositivo.</p>
                     </div>
-                    <a class="cover-link" href="img/portada.jpg" target="_blank" rel="noopener noreferrer">
-                        <img src="img/portada.jpg" alt="" onerror="this.closest('.cover-link').hidden = true">
+                    <a class="cover-link" id="cover-link" href="img/portada.jpg" target="_blank" rel="noopener noreferrer">
+                        <img id="cover-image" src="img/portada.jpg" alt="" onerror="this.closest('.cover-link').hidden = true">
                         <span>Explorar biblioteca <b aria-hidden="true">→</b></span>
                     </a>
                 </section>

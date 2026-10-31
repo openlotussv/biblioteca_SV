@@ -71,6 +71,7 @@
             'side-navigation', 'book-search', 'book-count', 'category-count',
             'catalog-summary', 'category-filter', 'result-count', 'book-grid',
             'empty-state', 'catalog-notice', 'local-manager-link', 'catalog-view', 'reader-view', 'reader-title',
+            'page-eyebrow', 'page-title-main', 'page-title-accent', 'page-subtitle', 'cover-link', 'cover-image',
             'reader-meta', 'breadcrumb-current', 'open-original', 'download-pdf',
             'page-input', 'page-count', 'prev-page', 'next-page', 'zoom-label',
             'zoom-out', 'zoom-in', 'toggle-fullscreen', 'pdf-stage', 'pdf-render',
@@ -131,6 +132,34 @@
             console.error('No se pudo cargar el catálogo publicado:', error);
             elements['catalog-notice'].textContent =
                 'No se pudo actualizar el catálogo desde el repositorio. Se muestra la última lista incluida en esta página.';
+            elements['catalog-notice'].hidden = false;
+        }
+    }
+
+    async function loadPageSettings() {
+        try {
+            const response = await fetch(`site-settings.json?v=${Date.now()}`, { cache: 'no-store' });
+            if (response.status === 404) return;
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const settings = await response.json();
+            if (settings?.version !== 1
+                || !['eyebrow', 'title', 'accent', 'subtitle'].every(key =>
+                    typeof settings[key] === 'string' && settings[key].trim())
+                || !/^img\/[A-Za-z0-9._-]+\.(?:jpg|jpeg|png|webp)$/i.test(settings.cover || '')) {
+                throw new Error('El archivo de configuración visual no tiene un formato compatible.');
+            }
+
+            elements['page-eyebrow'].textContent = settings.eyebrow;
+            elements['page-title-main'].textContent = settings.title;
+            elements['page-title-accent'].textContent = settings.accent;
+            elements['page-subtitle'].textContent = settings.subtitle;
+            elements['cover-link'].href = settings.cover;
+            elements['cover-image'].src = settings.cover;
+            elements['cover-link'].hidden = false;
+        } catch (error) {
+            console.error('No se pudo cargar la configuración de la página:', error);
+            elements['catalog-notice'].textContent =
+                'No se pudieron cargar los textos o la imagen de portada de la página.';
             elements['catalog-notice'].hidden = false;
         }
     }
@@ -397,8 +426,19 @@
     function closeSidebar() {
         elements['sidebar'].classList.remove('open');
         elements['sidebar-backdrop'].hidden = true;
-        elements['toggle-sidebar'].setAttribute('aria-expanded', 'false');
-        elements['toggle-sidebar'].setAttribute('aria-label', 'Abrir navegación');
+        if (window.matchMedia('(max-width: 760px)').matches) {
+            elements['toggle-sidebar'].setAttribute('aria-expanded', 'false');
+            elements['toggle-sidebar'].setAttribute('aria-label', 'Abrir navegación');
+        }
+    }
+
+    function toggleDesktopSidebar() {
+        const collapsed = document.querySelector('.app-shell').classList.toggle('sidebar-collapsed');
+        elements['toggle-sidebar'].setAttribute('aria-expanded', String(!collapsed));
+        elements['toggle-sidebar'].setAttribute(
+            'aria-label',
+            collapsed ? 'Expandir navegación' : 'Plegar navegación'
+        );
     }
 
     function connectEvents() {
@@ -435,8 +475,12 @@
             if (activeBook) openBook(activeBook);
         });
         elements['toggle-sidebar'].addEventListener('click', () => {
-            if (elements['sidebar'].classList.contains('open')) closeSidebar();
-            else openSidebar();
+            if (window.matchMedia('(max-width: 760px)').matches) {
+                if (elements['sidebar'].classList.contains('open')) closeSidebar();
+                else openSidebar();
+            } else {
+                toggleDesktopSidebar();
+            }
         });
         elements['close-sidebar'].addEventListener('click', closeSidebar);
         elements['sidebar-backdrop'].addEventListener('click', closeSidebar);
@@ -475,9 +519,15 @@
     window.addEventListener('DOMContentLoaded', () => {
         initializeElements();
         connectEvents();
+        const mobileLayout = window.matchMedia('(max-width: 760px)').matches;
+        elements['toggle-sidebar'].setAttribute('aria-expanded', String(!mobileLayout));
+        elements['toggle-sidebar'].setAttribute(
+            'aria-label',
+            mobileLayout ? 'Abrir navegación' : 'Plegar navegación'
+        );
         elements['local-manager-link'].hidden =
             !['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
         initializeCatalog();
-        loadCatalog().then(initializeCatalog);
+        Promise.all([loadCatalog(), loadPageSettings()]).then(initializeCatalog);
     }, { once: true });
 })();

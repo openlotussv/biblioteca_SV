@@ -18,7 +18,7 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 :focus-visible { outline: 3px solid #81aaff; outline-offset: 2px; }
 
-.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; width: 258px; flex-direction: column; padding: 27px 17px 18px; background: var(--sidebar); color: #fff; }
+.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; width: 258px; flex-direction: column; padding: 27px 17px 18px; background: var(--sidebar); color: #fff; transition: width .2s ease; }
 .brand { display: flex; align-items: center; gap: 12px; padding: 0 10px 28px; color: #fff; text-decoration: none; }
 .brand-mark { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; background: linear-gradient(145deg,#5ca3ff,#2d66e8); box-shadow: 0 6px 16px #2464d755; font-size: 23px; font-weight: 850; }
 .brand strong, .brand small { display: block; }
@@ -35,14 +35,28 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .nav-link.active .nav-count { color: #e8f0ff; }
 .manager-link { margin-top: 12px; color: #d7e4f8; text-decoration: none; }
 .manager-link:hover { background: #ffffff12; color: #fff; }
-.sidebar-close { display: none; }
+.sidebar .sidebar-close { display: none; }
+.sidebar-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 1.8; }
 .sidebar-note { display: flex; gap: 10px; margin: auto 2px 18px; padding: 13px 11px; border: 1px solid #ffffff12; border-radius: 10px; background: #ffffff08; }
 .sidebar-note-icon { display: grid; width: 21px; height: 21px; flex: 0 0 21px; place-items: center; border: 1px solid #8eb6ff; border-radius: 50%; color: #a7c7ff; font-size: 12px; font-weight: 700; }
 .sidebar-note strong { color: #eaf0fa; font-size: 11px; }
 .sidebar-note p { margin: 4px 0 0; color: #aab5c5; font-size: 10px; line-height: 1.55; }
 .sidebar-footer { padding: 13px 10px 0; border-top: 1px solid #ffffff16; color: #8d99aa; font-size: 9px; font-weight: 800; letter-spacing: .12em; }
 .sidebar-footer span { color: #5da0ff; }
-.workspace { min-height: 100vh; margin-left: 258px; }
+.workspace { min-height: 100vh; margin-left: 258px; transition: margin-left .2s ease; }
+.sidebar-toggle-button { display: inline-grid; }
+.sidebar-toggle-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+.mobile-menu-icon { display: none; }
+.app-shell.sidebar-collapsed .sidebar { width: 76px; padding-right: 12px; padding-left: 12px; }
+.app-shell.sidebar-collapsed .workspace { margin-left: 76px; }
+.app-shell.sidebar-collapsed .brand { justify-content: center; padding-right: 0; padding-left: 0; }
+.app-shell.sidebar-collapsed .brand>span:not(.brand-mark),
+.app-shell.sidebar-collapsed .sidebar-section-label,
+.app-shell.sidebar-collapsed .sidebar-note,
+.app-shell.sidebar-collapsed .sidebar-footer,
+.app-shell.sidebar-collapsed .nav-link>span:not(.nav-icon) { display: none; }
+.app-shell.sidebar-collapsed .nav-link { justify-content: center; gap: 0; padding-right: 0; padding-left: 0; }
+.app-shell.sidebar-collapsed .sidebar-toggle-button .desktop-sidebar-icon { transform: rotate(180deg); }
 
 .topbar { position: sticky; top: 0; z-index: 10; display: flex; min-height: 70px; align-items: center; justify-content: space-between; gap: 20px; padding: 0 38px; border-bottom: 1px solid var(--line); background: #ffffffed; backdrop-filter: blur(12px); }
 .topbar-start, .breadcrumb, .global-search { display: flex; align-items: center; }
@@ -154,12 +168,25 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 760px) {
     .sidebar { width: min(290px,86vw); transform: translateX(-102%); transition: transform .22s ease; box-shadow: 12px 0 30px #1522381c; }
     .sidebar.open { transform: translateX(0); }
-    .sidebar-close { position: absolute; top: 29px; right: 16px; display: inline-grid; width: 31px; height: 31px; border-color: #ffffff24; background: #ffffff0d; color: #fff; }
+    .sidebar .sidebar-close { position: absolute; top: 30px; right: 17px; display: inline-grid; width: 36px; height: 36px; border-color: #ffffff30; border-radius: 50%; background: #ffffff0c; color: #dce8f8; box-shadow: 0 2px 8px #11182720; }
+    .sidebar .sidebar-close:hover:not(:disabled) { border-color: #ffffff60; background: #ffffff20; color: #fff; }
+    .sidebar .sidebar-close svg { width: 15px; height: 15px; }
     .sidebar-backdrop:not([hidden]) { position: fixed; inset: 0; z-index: 19; display: block; background: #10182770; }
     .workspace { margin-left: 0; }
     .topbar { min-height: 60px; padding: 0 18px; }
-    .mobile-menu-button { display: inline-grid; width: 34px; height: 34px; flex-basis: 34px; }
-    .mobile-menu-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 2; }
+    .sidebar-toggle-button { width: 34px; height: 34px; flex-basis: 34px; }
+    .desktop-sidebar-icon { display: none; }
+    .mobile-menu-icon { display: block; stroke-width: 2; }
+    .app-shell.sidebar-collapsed .sidebar { width: min(290px,86vw); padding-right: 17px; padding-left: 17px; }
+    .app-shell.sidebar-collapsed .workspace { margin-left: 0; }
+    .app-shell.sidebar-collapsed .brand { justify-content: flex-start; padding-right: 10px; padding-left: 10px; }
+    .app-shell.sidebar-collapsed .brand>span:not(.brand-mark),
+    .app-shell.sidebar-collapsed .sidebar-section-label,
+    .app-shell.sidebar-collapsed .sidebar-note,
+    .app-shell.sidebar-collapsed .sidebar-footer,
+    .app-shell.sidebar-collapsed .nav-link>span:not(.nav-icon) { display: revert; }
+    .app-shell.sidebar-collapsed .nav-link { justify-content: flex-start; gap: 12px; padding-right: 12px; padding-left: 12px; }
+    .app-shell.sidebar-collapsed .sidebar-toggle-button .desktop-sidebar-icon { transform: none; }
     .topbar-start { gap: 10px; }
     .breadcrumb { gap: 7px; font-size: 10px; }
     .global-search { width: min(245px,48vw); height: 34px; gap: 6px; }
