@@ -57,6 +57,8 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
 
 - Busca con el campo superior o presiona `/` para enfocarlo.
 - Filtra por colección desde la navegación lateral o el selector.
+- Al contraer la navegación en escritorio, pasa el cursor sobre un icono para ver
+  el nombre de la categoría.
 - Usa la flecha junto a cada categoría para contraer o desplegar sus subcategorías; la selección de categorías abiertas se recuerda en este navegador.
 - Cuando una búsqueda o colección tiene más de 10 documentos, navega el catálogo con los controles de paginación.
 - Cambia de página con los controles o las flechas izquierda/derecha.

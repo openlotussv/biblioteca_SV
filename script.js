@@ -483,6 +483,8 @@
             button.className = 'nav-link';
             if (parentCategory) button.classList.add('nav-link-subcategory');
             button.dataset.category = item.category;
+            button.setAttribute('aria-label', `${item.label} (${item.count})`);
+            button.title = item.label;
             button.setAttribute('aria-current', item.category === activeCategory ? 'page' : 'false');
             if (item.category === activeCategory) button.classList.add('active');
 

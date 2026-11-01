@@ -8,13 +8,13 @@
     <title>Luna Cloud Book | Biblioteca digital</title>
     <link rel="stylesheet" href="styles.css?v=20261101-13">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" defer></script>
-    <script src="script.js?v=20261101-21" defer></script>
+    <script src="script.js?v=20261101-22" defer></script>
 </head>
 <body>
     <div class="app-shell">
         <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
         <aside class="sidebar" id="sidebar" aria-label="Navegación de la biblioteca">
-            <a class="brand" href="./" aria-label="Luna Cloud Book, inicio">
+            <a class="brand" href="./" aria-label="Luna Cloud Book, inicio" title="Luna Cloud Book, inicio">
                 <span class="brand-mark" aria-hidden="true">
                     <svg viewBox="0 0 24 24" focusable="false">
                         <path d="M19.4 15.2A8.2 8.2 0 0 1 8.8 4.6a8.6 8.6 0 1 0 10.6 10.6Z"/>
@@ -32,7 +32,8 @@
 
             <div class="sidebar-section-label">MENÚ PRINCIPAL</div>
             <nav class="side-navigation" id="side-navigation" aria-label="Secciones"></nav>
-            <a class="nav-link manager-link" id="local-manager-link" href="http://localhost/biblioteca_admin/" hidden>
+            <a class="nav-link manager-link" id="local-manager-link" href="http://localhost/biblioteca_admin/"
+               aria-label="Gestionar biblioteca" title="Gestionar biblioteca" hidden>
                 <span class="nav-icon" aria-hidden="true">⚙</span>
                 <span>Gestionar biblioteca</span>
             </a>
