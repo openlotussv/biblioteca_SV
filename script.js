@@ -47,6 +47,7 @@
     let renderSequence = 0;
     let zoom = 1;
     let resizeTimer = null;
+    let lastPdfStageWidth = 0;
 
     function byId(id) {
         return document.getElementById(id);
@@ -336,12 +337,11 @@
         }
 
         let currentTask = null;
+        let renderCanvas = null;
         try {
             const page = await pdfDocument.getPage(pageNumber);
             if (sequence !== renderSequence) return;
 
-            const canvas = elements['pdf-render'];
-            const context = canvas.getContext('2d', { alpha: false });
             const baseViewport = page.getViewport({ scale: 1 });
             const availableWidth = Math.max(260, elements['pdf-stage'].clientWidth - 40);
             const fitScale = Math.min(availableWidth / baseViewport.width, 1.8);
@@ -349,10 +349,11 @@
             const viewport = page.getViewport({ scale });
             const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
 
-            canvas.width = Math.floor(viewport.width * pixelRatio);
-            canvas.height = Math.floor(viewport.height * pixelRatio);
-            canvas.style.width = `${Math.floor(viewport.width)}px`;
-            canvas.style.height = `${Math.floor(viewport.height)}px`;
+            renderCanvas = document.createElement('canvas');
+            renderCanvas.width = Math.floor(viewport.width * pixelRatio);
+            renderCanvas.height = Math.floor(viewport.height * pixelRatio);
+            const context = renderCanvas.getContext('2d', { alpha: false });
+            if (!context) throw new Error('No se pudo crear el contexto del visor PDF.');
 
             currentTask = page.render({
                 canvasContext: context,
@@ -362,6 +363,15 @@
             renderTask = currentTask;
             await currentTask.promise;
             if (sequence !== renderSequence) return;
+
+            const canvas = elements['pdf-render'];
+            canvas.width = renderCanvas.width;
+            canvas.height = renderCanvas.height;
+            canvas.style.width = `${Math.floor(viewport.width)}px`;
+            canvas.style.height = `${Math.floor(viewport.height)}px`;
+            const visibleContext = canvas.getContext('2d', { alpha: false });
+            if (!visibleContext) throw new Error('No se pudo actualizar el visor PDF.');
+            visibleContext.drawImage(renderCanvas, 0, 0);
 
             elements['page-input'].value = String(pageNumber);
             elements['prev-page'].disabled = pageNumber <= 1;
@@ -374,6 +384,10 @@
             }
         } finally {
             if (renderTask === currentTask) renderTask = null;
+            if (renderCanvas) {
+                renderCanvas.width = 0;
+                renderCanvas.height = 0;
+            }
         }
     }
 
@@ -509,11 +523,23 @@
             }
         });
 
-        window.addEventListener('resize', () => {
+        function schedulePdfFit() {
             if (!pdfDocument) return;
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => goToPage(elements['page-input'].value), 120);
-        });
+        }
+
+        if ('ResizeObserver' in window) {
+            const stageObserver = new ResizeObserver(entries => {
+                const width = Math.round(entries[0].contentRect.width);
+                if (width === lastPdfStageWidth) return;
+                lastPdfStageWidth = width;
+                schedulePdfFit();
+            });
+            stageObserver.observe(elements['pdf-stage']);
+        } else {
+            window.addEventListener('resize', schedulePdfFit);
+        }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
