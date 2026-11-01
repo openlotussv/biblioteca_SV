@@ -1,17 +1,19 @@
 {
     "version": 1,
-    "updated_at": "2026-11-01T01:28:43+00:00",
+    "updated_at": "2026-11-01T01:31:18+00:00",
     "books": [
         {
             "id": "laura-zelada",
-            "title": "Libro 1",
-            "author": "Laura Zelada",
-            "description": "Lectura digital de la colección de Laura Zelada.",
+            "title": "Los 5 Lenguajes del Amor",
+            "author": "Gary Chapman",
+            "description": "libro de psicología y relaciones publicado originalmente en 1992 que sostiene que las personas expresan y reciben amor de cinco formas distintas.  Ha sido un bestseller del New York Times por más de una década, con más de 20 millones de copias vendidas en inglés y traducciones a 50 idiomas.",
             "category": "Libros",
-            "file": "documentos/pruebaLauraZelada.pdf",
-            "size": "2.8 MB",
+            "file": "documentos/laura-zelada.pdf",
+            "size": "0.1 MB",
             "color": "blue",
-            "icon": "▤"
+            "icon": "▤",
+            "subcategory": "Psicología",
+            "cover": "img/books/laura-zelada.webp"
         },
         {
             "id": "ben-reilly",
