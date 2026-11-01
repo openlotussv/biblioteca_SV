@@ -61,6 +61,10 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
 - Cambia de página con los controles o las flechas izquierda/derecha.
 - La búsqueda, colección, página del catálogo y último documento abierto se recuerdan al volver desde el mismo navegador y dispositivo. El zoom, avance de lectura y marcador también se guardan por documento; el tema y el menú lateral conservan sus preferencias.
 - Los datos guardados viven en `localStorage` de este navegador: no se sincronizan con GitHub ni con otros dispositivos o navegadores.
+- En el equipo local, la página abierta recibe automáticamente los cambios de
+  categorías, documentos, textos y portada guardados desde el gestor. Los
+  cambios de diseño se publican en GitHub al pulsar **Actualizar página**;
+  las categorías y documentos se publican al guardarlos.
 - Ajusta el zoom, abre el PDF original o descárgalo.
 - En el móvil, amplía con los controles y desliza la página para recorrerla
   horizontal o verticalmente; al ajustar la página, un deslizamiento lateral

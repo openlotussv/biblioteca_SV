@@ -60,6 +60,7 @@
     let pdfLayoutReady = false;
     const themeStorageKey = 'genuino-library-theme-v1';
     const appStateStorageKey = 'luna-cloud-book-state-v1';
+    const siteRefreshStorageKey = 'luna-cloud-book-site-refresh-v1';
     const progressStoragePrefix = 'genuino-library-progress-v1:';
     const bookmarkStoragePrefix = 'luna-cloud-book-bookmark-v1:';
     const zoomStoragePrefix = 'luna-cloud-book-zoom-v1:';
@@ -423,13 +424,26 @@
             elements['page-title-main'].textContent = settings.title;
             elements['page-title-accent'].textContent = settings.accent;
             elements['page-subtitle'].textContent = settings.subtitle;
-            elements['cover-image'].src = settings.cover;
+            elements['cover-image'].src = `${settings.cover}?v=${Date.now()}`;
             elements['cover-display'].hidden = false;
         } catch (error) {
             console.error('No se pudo cargar la configuración de la página:', error);
             elements['catalog-notice'].textContent =
                 'No se pudieron cargar los textos o la imagen de portada de la página.';
             elements['catalog-notice'].hidden = false;
+        }
+    }
+
+    async function refreshFromManager(scope) {
+        if (scope === 'catalog' || scope === 'all') {
+            await loadCatalog();
+            initializeCatalog();
+            if (activeBook && !books.some(book => book.id === activeBook.id)) {
+                showCatalog();
+            }
+        }
+        if (scope === 'page' || scope === 'all') {
+            await loadPageSettings();
         }
     }
 
@@ -1025,6 +1039,22 @@
         );
         elements['local-manager-link'].hidden =
             !['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+        window.addEventListener('storage', event => {
+            if (event.key !== siteRefreshStorageKey || !event.newValue) return;
+            try {
+                const update = JSON.parse(event.newValue);
+                if (['catalog', 'page', 'all'].includes(update.scope)) {
+                    refreshFromManager(update.scope).catch(error => {
+                        console.error('No se pudo sincronizar la página con el gestor:', error);
+                        elements['catalog-notice'].textContent =
+                            'No se pudo actualizar la página con los cambios del gestor. Recarga para volver a intentarlo.';
+                        elements['catalog-notice'].hidden = false;
+                    });
+                }
+            } catch (error) {
+                console.error('La notificación del gestor no tiene un formato válido:', error);
+            }
+        });
         initializeCatalog();
         Promise.all([loadCatalog(), loadPageSettings()]).then(() => {
             initializeCatalog();
