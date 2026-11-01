@@ -92,6 +92,28 @@
         return JSON.stringify([category, subcategory]);
     }
 
+    function navigationIconFor(label) {
+        const normalizedLabel = label.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLocaleLowerCase('es');
+        if (normalizedLabel.includes('comic') || normalizedLabel.includes('manga')) {
+            return '<svg viewBox="0 0 24 24"><path d="M4 4.75A2.25 2.25 0 0 1 6.25 2.5h11.5A2.25 2.25 0 0 1 20 4.75v13.5a2.25 2.25 0 0 1-2.25 2.25H6.25A2.25 2.25 0 0 1 4 18.25Z"/><path d="M12 2.5v18M4 8.5h8m0 7h8M7 5.5h2m8 13h1"/></svg>';
+        }
+        if (normalizedLabel.includes('libro') || normalizedLabel.includes('book')) {
+            return '<svg viewBox="0 0 24 24"><path d="M3.5 5.75A2.25 2.25 0 0 1 5.75 3.5H11v16H5.75a2.25 2.25 0 0 0-2.25 2.25Zm17 0A2.25 2.25 0 0 0 18.25 3.5H13v16h5.25a2.25 2.25 0 0 1 2.25 2.25Z"/><path d="M6.5 7h2m9 0h-2"/></svg>';
+        }
+        if (normalizedLabel.includes('material') || normalizedLabel.includes('adicional')) {
+            return '<svg viewBox="0 0 24 24"><path d="M3 6.5h7l2 2h9v10.25A2.25 2.25 0 0 1 18.75 21h-13.5A2.25 2.25 0 0 1 3 18.75Z"/><path d="M3 9h18"/></svg>';
+        }
+        if (normalizedLabel.includes('revista') || normalizedLabel.includes('periodico')) {
+            return '<svg viewBox="0 0 24 24"><path d="M5 3.5h14A2.5 2.5 0 0 1 21.5 6v14.5h-15A2.5 2.5 0 0 1 4 18V4.5a1 1 0 0 1 1-1Z"/><path d="M4 17.5A2.5 2.5 0 0 0 6.5 20.5M8 7h9m-9 4h3m3 0h3m-9 4h9"/></svg>';
+        }
+        if (normalizedLabel === 'todo el catalogo') {
+            return '<svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg>';
+        }
+        return '<svg viewBox="0 0 24 24"><path d="M3 6.5h7l2 2h9v10.25A2.25 2.25 0 0 1 18.75 21h-13.5A2.25 2.25 0 0 1 3 18.75Z"/><path d="M3 9h18"/></svg>';
+    }
+
     function initializeElements() {
         [
             'side-navigation', 'book-search', 'book-count', 'category-count',
@@ -483,15 +505,15 @@
             button.className = 'nav-link';
             if (parentCategory) button.classList.add('nav-link-subcategory');
             button.dataset.category = item.category;
+            button.dataset.tooltip = item.label;
             button.setAttribute('aria-label', `${item.label} (${item.count})`);
-            button.title = item.label;
             button.setAttribute('aria-current', item.category === activeCategory ? 'page' : 'false');
             if (item.category === activeCategory) button.classList.add('active');
 
             const icon = document.createElement('span');
             icon.className = 'nav-icon';
             icon.setAttribute('aria-hidden', 'true');
-            icon.textContent = item.icon;
+            icon.innerHTML = navigationIconFor(item.label);
             const label = document.createElement('span');
             label.textContent = item.label;
             const count = document.createElement('span');
@@ -519,7 +541,7 @@
         elements['side-navigation'].appendChild(createFilterButton({
             category: 'all',
             label: 'Todo el catálogo',
-            icon: '▦',
+            icon: 'catalog',
             count: books.length
         }));
 
@@ -531,7 +553,7 @@
             heading.appendChild(createFilterButton({
                 category: categoryFilterKey(category.name),
                 label: category.name,
-                icon: index === 0 ? '▤' : '▧',
+                icon: 'category',
                 count: books.filter(book => book.category === category.name).length
             }));
 
@@ -1058,6 +1080,7 @@
 
     function toggleDesktopSidebar() {
         const collapsed = document.querySelector('.app-shell').classList.toggle('sidebar-collapsed');
+        document.querySelector('.sidebar-tooltip')?.classList.remove('visible');
         persistAppState();
         elements['toggle-sidebar'].setAttribute('aria-expanded', String(!collapsed));
         elements['toggle-sidebar'].setAttribute(
@@ -1067,6 +1090,82 @@
     }
 
     function connectEvents() {
+        const sidebarTooltip = document.createElement('div');
+        sidebarTooltip.className = 'sidebar-tooltip';
+        sidebarTooltip.id = 'sidebar-tooltip';
+        sidebarTooltip.setAttribute('role', 'tooltip');
+        sidebarTooltip.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(sidebarTooltip);
+        let tooltipTarget = null;
+        const hideSidebarTooltip = () => {
+            if (tooltipTarget) tooltipTarget.removeAttribute('aria-describedby');
+            tooltipTarget = null;
+            sidebarTooltip.classList.remove('visible');
+            sidebarTooltip.setAttribute('aria-hidden', 'true');
+        };
+        const showSidebarTooltip = target => {
+            const app = document.querySelector('.app-shell');
+            if (!app.classList.contains('sidebar-collapsed')
+                || window.matchMedia('(max-width: 760px)').matches) {
+                hideSidebarTooltip();
+                return;
+            }
+            const label = target.dataset.tooltip;
+            if (!label) return;
+            tooltipTarget = target;
+            target.setAttribute('aria-describedby', sidebarTooltip.id);
+            sidebarTooltip.textContent = label;
+            sidebarTooltip.setAttribute('aria-hidden', 'false');
+            const targetRect = target.getBoundingClientRect();
+            const tooltipRect = sidebarTooltip.getBoundingClientRect();
+            sidebarTooltip.style.left = `${Math.min(
+                targetRect.right + 12,
+                window.innerWidth - tooltipRect.width - 12
+            )}px`;
+            sidebarTooltip.style.top = `${targetRect.top + targetRect.height / 2}px`;
+            sidebarTooltip.classList.add('visible');
+        };
+        const findSidebarTooltipTarget = target => target instanceof Element
+            ? target.closest('[data-tooltip]')
+            : null;
+        elements['side-navigation'].addEventListener('pointerover', event => {
+            if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                const target = findSidebarTooltipTarget(event.target);
+                if (target && elements['side-navigation'].contains(target)) {
+                    showSidebarTooltip(target);
+                }
+            }
+        });
+        elements['local-manager-link'].addEventListener('pointerover', event => {
+            if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                showSidebarTooltip(event.currentTarget);
+            }
+        });
+        elements['side-navigation'].addEventListener('pointerout', event => {
+            const target = findSidebarTooltipTarget(event.target);
+            if (target && !target.contains(event.relatedTarget) && target === tooltipTarget) {
+                hideSidebarTooltip();
+            }
+        });
+        elements['local-manager-link'].addEventListener('pointerout', hideSidebarTooltip);
+        elements['side-navigation'].addEventListener('focusin', event => {
+            const target = findSidebarTooltipTarget(event.target);
+            if (target && elements['side-navigation'].contains(target)) showSidebarTooltip(target);
+        });
+        elements['local-manager-link'].addEventListener('focus', event => {
+            showSidebarTooltip(event.currentTarget);
+        });
+        elements['side-navigation'].addEventListener('focusout', event => {
+            const target = findSidebarTooltipTarget(event.target);
+            if (target && !target.contains(event.relatedTarget) && target === tooltipTarget) {
+                hideSidebarTooltip();
+            }
+        });
+        elements['local-manager-link'].addEventListener('blur', hideSidebarTooltip);
+        elements['toggle-sidebar'].addEventListener('click', hideSidebarTooltip);
+        window.addEventListener('resize', hideSidebarTooltip);
+        window.addEventListener('scroll', hideSidebarTooltip, true);
+
         elements['theme-toggle'].addEventListener('click', () => {
             setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
         });

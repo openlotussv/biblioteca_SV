@@ -49,10 +49,14 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .nav-subcategory-list[hidden] { display: none; }
 .nav-link:hover { background: #ffffff0d; color: #fff; }
 .nav-link.active { background: var(--blue); color: #fff; box-shadow: 0 5px 14px #0e49bb3d; }
-.nav-icon { width: 22px; color: #c4cfde; font-size: 16px; text-align: center; }
+.nav-icon { display: grid; width: 22px; height: 22px; flex: 0 0 22px; place-items: center; color: #c4cfde; }
+.nav-icon svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.65; }
 .nav-link.active .nav-icon { color: #fff; }
 .nav-count { margin-left: auto; color: #b6c1d0; font-size: 11px; }
 .nav-link.active .nav-count { color: #e8f0ff; }
+.sidebar-tooltip { position: fixed; z-index: 100; max-width: min(250px,calc(100vw - 100px)); padding: 9px 13px; transform: translateY(-50%) translateX(-4px); border: 1px solid #ffffff20; border-radius: 9px; background: #111a29f5; color: #f7f9fd; box-shadow: 0 8px 24px #08111f45; font-size: 12px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; pointer-events: none; opacity: 0; visibility: hidden; transition: opacity .14s ease,transform .14s ease,visibility .14s; }
+.sidebar-tooltip::before { position: absolute; top: 50%; left: -6px; width: 10px; height: 10px; transform: translateY(-50%) rotate(45deg); border-bottom: 1px solid #ffffff20; border-left: 1px solid #ffffff20; background: #111a29f5; content: ""; }
+.sidebar-tooltip.visible { transform: translateY(-50%) translateX(0); opacity: 1; visibility: visible; }
 .manager-link { margin-top: 12px; color: #d7e4f8; text-decoration: none; }
 .manager-link:hover { background: #ffffff12; color: #fff; }
 .sidebar .sidebar-close { display: none; }
