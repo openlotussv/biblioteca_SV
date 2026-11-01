@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "updated_at": "2026-11-01T17:23:34+00:00",
+    "updated_at": "2026-11-01T17:26:32+00:00",
     "books": [
         {
             "id": "laura-zelada",
@@ -79,6 +79,19 @@
             "icon": "▤",
             "subcategory": "Estudios Sociales",
             "cover": "img/books/estudios-sociales-de-primer-grado.webp"
+        },
+        {
+            "id": "matem-aticas-de-primer-grado-tomo-1",
+            "title": "MATEMÁTICAS DE PRIMER GRADO TOMO #1",
+            "author": "MINED",
+            "description": "«El Salvador Aprende» te invita a explorar el fascinante mundo de las matemáticas con nuestro Libro de Matemáticas de Primer Grado, disponible para descarga gratuita. Nos comprometemos a ofrecer acceso a este material educativo de manera legítima, facilitando así una herramienta valiosa para el inicio de la educación matemática de los estudiantes salvadoreños. Aunque no somos propietarios de los libros, garantizamos que cada descarga se realiza respetando los derechos y procedimientos establecidos por el sistema educativo de El Salvador.\n\nEste libro está diseñado específicamente para estudiant",
+            "category": "Libros",
+            "file": "documentos/matem-aticas-de-primer-grado-tomo-1.pdf",
+            "size": "22.7 MB",
+            "color": "blue",
+            "icon": "▤",
+            "subcategory": "Matematicas",
+            "cover": "img/books/matem-aticas-de-primer-grado-tomo-1.webp"
         }
     ],
     "categories": [
