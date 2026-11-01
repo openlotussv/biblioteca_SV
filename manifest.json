@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "updated_at": "2026-11-01T17:08:02+00:00",
+    "updated_at": "2026-11-01T17:08:53+00:00",
     "books": [
         {
             "id": "laura-zelada",
@@ -75,7 +75,8 @@
                 "Comics",
                 "Psicología",
                 "Autoayuda",
-                "Estudios Sociales"
+                "Estudios Sociales",
+                "Ciencias salud y medio ambiente"
             ]
         },
         {
