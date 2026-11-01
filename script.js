@@ -1101,22 +1101,47 @@
         });
         let dragStart = null;
         let touchDragStart = null;
+        let pinchGesture = null;
+        const getTouchDistance = touches => Math.hypot(
+            touches[0].clientX - touches[1].clientX,
+            touches[0].clientY - touches[1].clientY
+        );
+        const finishPinchZoom = () => {
+            if (!pinchGesture) return;
+            const zoomChanged = zoom !== pinchGesture.startZoom;
+            pinchGesture = null;
+            elements['pdf-page-stack'].style.transform = '';
+            elements['pdf-page-stack'].style.transformOrigin = '';
+            elements['pdf-page-stack'].style.willChange = '';
+            elements['pdf-stage'].classList.remove('pdf-pinch-zooming');
+            if (!zoomChanged) return;
+            if (activeBook) saveZoomFor(activeBook);
+            renderPage(currentPageNumber);
+        };
         const isReaderFullscreen = () => document.fullscreenElement === elements['pdf-stage']
             || elements['pdf-stage'].classList.contains('pdf-stage--fullscreen-fallback');
         const isAtHorizontalEdge = direction => {
             const stage = elements['pdf-stage'];
-            const maxScrollLeft = stage.scrollWidth - stage.clientWidth;
+            const maxScrollLeft = Math.max(0, stage.scrollWidth - stage.clientWidth);
             return direction > 0
                 ? stage.scrollLeft >= maxScrollLeft - 8
                 : stage.scrollLeft <= 8;
         };
-        const turnFromZoomedEdge = (deltaX, deltaY) => {
+        const turnFromZoomedEdge = (deltaX, deltaY, startScrollLeft) => {
             if (!isReaderFullscreen() || elements['pdf-render'].classList.contains('pdf-swipe-enabled')
                 || Math.abs(deltaX) < 52 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) {
                 return false;
             }
             const direction = deltaX < 0 ? 1 : -1;
-            if (!isAtHorizontalEdge(direction)) return false;
+            const stage = elements['pdf-stage'];
+            const maxScrollLeft = Math.max(0, stage.scrollWidth - stage.clientWidth);
+            const boundedStart = Math.min(maxScrollLeft, Math.max(0, startScrollLeft));
+            const distanceToEdge = direction > 0
+                ? maxScrollLeft - boundedStart
+                : boundedStart;
+            const draggedPastEdge = direction > 0 ? -deltaX : deltaX;
+            if (maxScrollLeft <= 8 || !isAtHorizontalEdge(direction)
+                || draggedPastEdge < distanceToEdge + 36) return false;
             elements['pdf-stage'].scrollLeft = 0;
             elements['pdf-stage'].scrollTop = 0;
             goToPage(currentPageNumber + direction);
@@ -1155,10 +1180,11 @@
             const deltaX = event.clientX - dragStart.x;
             const deltaY = event.clientY - dragStart.y;
             const { pageFits } = dragStart;
+            const { scrollLeft } = dragStart;
             dragStart = null;
             elements['pdf-stage'].classList.remove('pdf-dragging');
             if (!pageFits) {
-                turnFromZoomedEdge(deltaX, deltaY);
+                turnFromZoomedEdge(deltaX, deltaY, scrollLeft);
                 return;
             }
             if (Math.abs(deltaX) < 52 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) return;
@@ -1166,7 +1192,24 @@
             goToPage(currentPage + (deltaX < 0 ? 1 : -1));
         });
         elements['pdf-stage'].addEventListener('touchstart', event => {
-            if (event.touches.length !== 1 || !isReaderFullscreen()
+            if (event.touches.length === 2 && elements['pdf-render'].contains(event.target)) {
+                touchDragStart = null;
+                const stageRect = elements['pdf-page-stack'].getBoundingClientRect();
+                const centerX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+                const centerY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+                pinchGesture = {
+                    startDistance: Math.max(getTouchDistance(event.touches), 1),
+                    startZoom: zoom,
+                    originX: centerX - stageRect.left,
+                    originY: centerY - stageRect.top
+                };
+                elements['pdf-page-stack'].style.transformOrigin =
+                    `${pinchGesture.originX}px ${pinchGesture.originY}px`;
+                elements['pdf-page-stack'].style.willChange = 'transform';
+                elements['pdf-stage'].classList.add('pdf-pinch-zooming');
+                return;
+            }
+            if (event.touches.length !== 1 || pinchGesture || !isReaderFullscreen()
                 || elements['pdf-render'].classList.contains('pdf-swipe-enabled')
                 || !elements['pdf-render'].contains(event.target)) {
                 touchDragStart = null;
@@ -1174,20 +1217,46 @@
             }
             touchDragStart = {
                 x: event.touches[0].clientX,
-                y: event.touches[0].clientY
+                y: event.touches[0].clientY,
+                scrollLeft: elements['pdf-stage'].scrollLeft
             };
         }, { passive: true });
+        elements['pdf-stage'].addEventListener('touchmove', event => {
+            if (!pinchGesture || event.touches.length !== 2) return;
+            event.preventDefault();
+            zoom = Math.min(2.5, Math.max(
+                0.65,
+                Math.round(pinchGesture.startZoom * getTouchDistance(event.touches)
+                    / pinchGesture.startDistance * 100) / 100
+            ));
+            elements['pdf-page-stack'].style.transform =
+                `scale(${zoom / pinchGesture.startZoom})`;
+            const zoomLabel = zoom === 1 ? 'Ajustar' : `${Math.round(zoom * 100)}%`;
+            elements['zoom-label'].textContent = zoomLabel;
+            elements['fullscreen-zoom-label'].textContent = zoomLabel;
+        }, { passive: false });
         elements['pdf-stage'].addEventListener('touchend', event => {
+            if (pinchGesture) {
+                touchDragStart = null;
+                if (event.touches.length === 0) finishPinchZoom();
+                return;
+            }
             if (!touchDragStart || event.changedTouches.length !== 1) {
                 touchDragStart = null;
                 return;
             }
             const deltaX = event.changedTouches[0].clientX - touchDragStart.x;
             const deltaY = event.changedTouches[0].clientY - touchDragStart.y;
+            const { scrollLeft } = touchDragStart;
             touchDragStart = null;
-            turnFromZoomedEdge(deltaX, deltaY);
+            turnFromZoomedEdge(deltaX, deltaY, scrollLeft);
         }, { passive: true });
         elements['pdf-stage'].addEventListener('touchcancel', () => {
+            if (pinchGesture) {
+                finishPinchZoom();
+                touchDragStart = null;
+                return;
+            }
             touchDragStart = null;
         }, { passive: true });
         document.addEventListener('pointercancel', () => {

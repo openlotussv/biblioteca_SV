@@ -67,9 +67,9 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
   cambios de diseño se publican en GitHub al pulsar **Actualizar página**;
   las categorías y documentos se publican al guardarlos.
 - Ajusta el zoom, abre el PDF original o descárgalo.
-- En el móvil, amplía con los controles y desliza la página para recorrerla
-  horizontal o verticalmente; al ajustar la página, un deslizamiento lateral
-  cambia de página.
+- En el móvil, amplía con los controles o con el gesto de pellizcar con dos
+  dedos. Después desliza la página para recorrerla horizontal o verticalmente;
+  al ajustar la página, un deslizamiento lateral cambia de página.
 - El cambio de página incluye una animación ligera de giro en pantallas táctiles
   y de escritorio; saltar varias páginas, cambiar zoom o redimensionar evita la
   animación para mantener el visor ágil.
@@ -85,8 +85,9 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
   izquierda indica la página actual y el total. En móvil, el estado de guardado
   aparece como indicador animado y luego como un check; en PC conserva el mensaje
   completo. Los controles y los indicadores permanecen anclados a la pantalla al
-  desplazar una página ampliada. En pantalla completa, al arrastrar hacia fuera
-  desde el borde izquierdo o derecho de una página ampliada se cambia de página.
+  desplazar una página ampliada. En pantalla completa, el arrastre de una página
+  ampliada solo cambia de página después de llegar a un borde horizontal y seguir
+  arrastrando hacia fuera; los deslizamientos dentro de la página no la cambian.
   En PC puedes arrastrar
   para recorrer una página ampliada; el avance se recuerda por documento en este
   navegador.

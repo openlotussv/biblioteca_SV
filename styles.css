@@ -190,6 +190,7 @@ html[data-theme="dark"] .theme-icon-sun { display: block; }
 .page-total strong { color: #364256; }
 #zoom-label { min-width: 45px; text-align: center; }
 .pdf-stage { position: relative; display: flex; min-height: 440px; max-height: 74vh; align-items: flex-start; justify-content: safe center; overflow: auto; padding: 20px; border: 1px solid #e3e7ed; border-top: 0; border-radius: 0 0 9px 9px; background: #e9edf3; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y pinch-zoom; perspective: 1800px; }
+.pdf-stage.pdf-pinch-zooming { overflow: hidden; }
 .pdf-page-stack { position: relative; display: block; flex: 0 0 auto; transform-style: preserve-3d; }
 #pdf-render, #pdf-next-render { position: absolute; inset: 0; display: block; height: auto; max-width: none; transform: translateZ(0); backface-visibility: hidden; background: #fff; box-shadow: 0 5px 18px #28364b26; touch-action: pan-x pan-y pinch-zoom; }
 #pdf-render { z-index: 2; cursor: grab; }
