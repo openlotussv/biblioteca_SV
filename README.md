@@ -74,7 +74,8 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
   y de escritorio; saltar varias páginas, cambiar zoom o redimensionar evita la
   animación para mantener el visor ágil.
 - Los botones laterales del visor también cambian de página; en pantalla completa
-  permanecen a los lados y muestran el avance guardado. En PC puedes arrastrar
+  permanecen a los lados y el aviso de avance guardado aparece brevemente en una
+  esquina inferior. En PC puedes arrastrar
   horizontalmente para pasar de página y verticalmente para recorrer una página
   ampliada; el avance se recuerda por documento en este navegador.
 - En pantallas pequeñas, abre el menú con el botón superior izquierdo.

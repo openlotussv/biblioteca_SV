@@ -57,6 +57,7 @@
     let renderSequence = 0;
     let zoom = 1;
     let resizeTimer = null;
+    let pageStatusTimer = null;
     let lastPdfStageWidth = 0;
     let currentPageNumber = 1;
     let pdfLayoutReady = false;
@@ -240,15 +241,21 @@
             elements['reading-progress-status'].textContent =
                 'Avance guardado en este navegador y dispositivo.';
             elements['reading-progress-status'].hidden = false;
-            elements['pdf-page-status'].textContent =
-                `Página ${pageNumber} de ${pdfDocument.numPages} · guardada en este dispositivo`;
         } catch (error) {
             console.error('No se pudo guardar el avance de lectura:', error);
             elements['reading-progress-status'].textContent =
                 'No se pudo guardar el avance. Revisa el almacenamiento de este navegador.';
             elements['reading-progress-status'].hidden = false;
-            elements['pdf-page-status'].textContent = `Página ${pageNumber} de ${pdfDocument.numPages}`;
         }
+        elements['pdf-page-status'].textContent = elements['reading-progress-status'].textContent.includes('No se pudo')
+            ? `Página ${pageNumber} de ${pdfDocument.numPages} · no se pudo guardar`
+            : `Página ${pageNumber} de ${pdfDocument.numPages} · guardada en este dispositivo`;
+        elements['pdf-page-status'].hidden = false;
+        clearTimeout(pageStatusTimer);
+        pageStatusTimer = setTimeout(() => {
+            elements['pdf-page-status'].hidden = true;
+            pageStatusTimer = null;
+        }, 3000);
         updateBookmarkControl();
     }
 
@@ -1143,6 +1150,12 @@
             } catch (error) {
                 console.error('No se pudo activar la pantalla completa:', error);
             }
+        });
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) return;
+            clearTimeout(pageStatusTimer);
+            pageStatusTimer = null;
+            elements['pdf-page-status'].hidden = true;
         });
 
         document.addEventListener('keydown', event => {
