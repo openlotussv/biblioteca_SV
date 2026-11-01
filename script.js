@@ -8,6 +8,7 @@
             author: 'Laura Zelada',
             description: 'Lectura digital de la colección de Laura Zelada.',
             category: 'Libros',
+            subcategory: '',
             file: 'documentos/pruebaLauraZelada.pdf',
             size: '2.8 MB',
             color: 'blue',
@@ -19,6 +20,7 @@
             author: 'Colección de lectura',
             description: 'Documento de lectura en formato PDF.',
             category: 'Libros',
+            subcategory: '',
             file: 'documentos/BENREILYSPIDERMANTOMO1.pdf',
             size: '22.6 MB',
             color: 'purple',
@@ -30,6 +32,7 @@
             author: 'Material adicional',
             description: 'Documento PDF adicional disponible en la biblioteca.',
             category: 'Material adicional',
+            subcategory: '',
             file: 'documentos/MENUPRUEBA.pdf',
             size: '1.1 MB',
             color: 'green',
@@ -38,6 +41,7 @@
     ];
 
     let books = fallbackBooks;
+    let categoryDefinitions = [];
     const elements = {};
     let activeCategory = 'all';
     let activeBook = null;
@@ -52,6 +56,7 @@
     let pdfLayoutReady = false;
     const themeStorageKey = 'genuino-library-theme-v1';
     const progressStoragePrefix = 'genuino-library-progress-v1:';
+    const bookmarkStoragePrefix = 'luna-cloud-book-bookmark-v1:';
 
     function byId(id) {
         return document.getElementById(id);
@@ -68,7 +73,13 @@
     }
 
     function getCategories() {
-        return [...new Set(books.map(book => book.category))];
+        return categoryDefinitions.length
+            ? categoryDefinitions
+            : [...new Set(books.map(book => book.category))].map(name => ({ name, subcategories: [] }));
+    }
+
+    function categoryFilterKey(category, subcategory = '') {
+        return JSON.stringify([category, subcategory]);
     }
 
     function initializeElements() {
@@ -82,7 +93,8 @@
             'zoom-out', 'zoom-in', 'toggle-fullscreen', 'pdf-stage', 'pdf-render',
             'reader-message', 'reader-error', 'reader-error-detail', 'retry-pdf',
             'back-to-catalog', 'toggle-sidebar', 'close-sidebar', 'sidebar', 'sidebar-backdrop',
-            'theme-toggle', 'reading-progress-status'
+            'theme-toggle', 'reading-progress-status', 'bookmark-page', 'bookmark-page-label',
+            'bookmark-status'
         ].forEach(id => {
             elements[id] = byId(id);
         });
@@ -148,6 +160,51 @@
                 'No se pudo guardar el avance. Revisa el almacenamiento de este navegador.';
             elements['reading-progress-status'].hidden = false;
         }
+        updateBookmarkControl();
+    }
+
+    function updateBookmarkControl() {
+        if (!activeBook) return;
+        try {
+            const value = localStorage.getItem(bookmarkStoragePrefix + activeBook.id);
+            const bookmarkPage = value === null ? null : Number.parseInt(value, 10);
+            const isMarked = Number.isInteger(bookmarkPage) && bookmarkPage > 0;
+            const isCurrentPageMarked = isMarked && bookmarkPage === currentPageNumber;
+            elements['bookmark-page'].disabled = !pdfDocument;
+            elements['bookmark-page'].setAttribute('aria-pressed', String(isCurrentPageMarked));
+            elements['bookmark-page-label'].textContent = isCurrentPageMarked
+                ? 'Quitar marcador'
+                : 'Marcar página';
+            elements['bookmark-status'].textContent = isMarked
+                ? `Marcador guardado en la página ${bookmarkPage}.`
+                : 'Puedes marcar una página para volver a ella.';
+            elements['bookmark-status'].hidden = false;
+        } catch (error) {
+            console.error('No se pudo leer el marcador guardado:', error);
+            elements['bookmark-page'].disabled = true;
+            elements['bookmark-status'].textContent =
+                'No se pudo leer el marcador guardado en este navegador.';
+            elements['bookmark-status'].hidden = false;
+        }
+    }
+
+    function togglePageBookmark() {
+        if (!activeBook || !pdfDocument) return;
+        const key = bookmarkStoragePrefix + activeBook.id;
+        try {
+            const storedPage = Number.parseInt(localStorage.getItem(key), 10);
+            if (storedPage === currentPageNumber) {
+                localStorage.removeItem(key);
+            } else {
+                localStorage.setItem(key, String(currentPageNumber));
+            }
+            updateBookmarkControl();
+        } catch (error) {
+            console.error('No se pudo guardar el marcador de página:', error);
+            elements['bookmark-status'].textContent =
+                'No se pudo guardar el marcador. Revisa el almacenamiento de este navegador.';
+            elements['bookmark-status'].hidden = false;
+        }
     }
 
     function initializeCatalog() {
@@ -163,9 +220,15 @@
 
         categories.forEach(category => {
             const option = document.createElement('option');
-            option.value = category;
-            option.textContent = category;
+            option.value = categoryFilterKey(category.name);
+            option.textContent = category.name;
             elements['category-filter'].appendChild(option);
+            category.subcategories.forEach(subcategory => {
+                const childOption = document.createElement('option');
+                childOption.value = categoryFilterKey(category.name, subcategory);
+                childOption.textContent = `${category.name} · ${subcategory}`;
+                elements['category-filter'].appendChild(childOption);
+            });
         });
 
         elements['category-filter'].value = activeCategory;
@@ -182,18 +245,65 @@
                 throw new Error('El manifiesto no tiene un formato compatible.');
             }
 
-            books = manifest.books.map(book => {
+            const bookIds = new Set();
+            const loadedBooks = manifest.books.map(book => {
                 if (!book || !/^[a-z0-9-]+$/.test(book.id || '')
                     || !['title', 'author', 'description', 'category', 'size'].every(key =>
                         typeof book[key] === 'string' && book[key].trim())
                     || !/^documentos\/[A-Za-z0-9._-]+\.pdf$/i.test(book.file || '')
                     || !['blue', 'purple', 'green'].includes(book.color)
-                    || !['▤', '▧'].includes(book.icon)) {
+                    || !['▤', '▧'].includes(book.icon)
+                    || (book.subcategory !== undefined
+                        && (typeof book.subcategory !== 'string' || book.subcategory.length > 80))
+                    || (book.cover !== undefined
+                        && !/^img\/books\/[A-Za-z0-9._-]+\.webp$/i.test(book.cover))) {
                     throw new Error('El manifiesto contiene información de un documento inválida.');
                 }
+                if (bookIds.has(book.id)) {
+                    throw new Error('El manifiesto contiene identificadores de documento repetidos.');
+                }
+                bookIds.add(book.id);
                 return book;
             });
-            if (activeCategory !== 'all' && !books.some(book => book.category === activeCategory)) {
+            let loadedCategories;
+            if (manifest.categories === undefined) {
+                loadedCategories = [...new Set(loadedBooks.map(book => book.category))]
+                    .map(name => ({ name, subcategories: [] }));
+            } else {
+                if (!Array.isArray(manifest.categories)) {
+                    throw new Error('Las categorías del manifiesto no tienen un formato compatible.');
+                }
+                loadedCategories = manifest.categories.map(category => {
+                    if (!category || typeof category.name !== 'string' || !category.name.trim()
+                        || category.name.length > 80 || !Array.isArray(category.subcategories)
+                        || category.subcategories.some(name =>
+                            typeof name !== 'string' || !name.trim() || name.length > 80)) {
+                        throw new Error('El manifiesto contiene una categoría inválida.');
+                    }
+                    return { name: category.name, subcategories: category.subcategories };
+                });
+            }
+            const categoryNames = new Set(loadedCategories.map(category => category.name.toLocaleLowerCase('es')));
+            if (categoryNames.size !== loadedCategories.length
+                || loadedCategories.some(category =>
+                    new Set(category.subcategories.map(name => name.toLocaleLowerCase('es'))).size
+                        !== category.subcategories.length)
+                || loadedBooks.some(book => !categoryNames.has(book.category.toLocaleLowerCase('es'))
+                    || (book.subcategory
+                        && !loadedCategories.find(category => category.name === book.category)
+                            ?.subcategories.includes(book.subcategory)))) {
+                throw new Error('El manifiesto contiene categorías repetidas o asignaciones inválidas.');
+            }
+            books = loadedBooks;
+            categoryDefinitions = loadedCategories;
+            const availableFilters = new Set(['all']);
+            loadedCategories.forEach(category => {
+                availableFilters.add(categoryFilterKey(category.name));
+                category.subcategories.forEach(subcategory => {
+                    availableFilters.add(categoryFilterKey(category.name, subcategory));
+                });
+            });
+            if (!availableFilters.has(activeCategory)) {
                 activeCategory = 'all';
             }
         } catch (error) {
@@ -235,12 +345,22 @@
     function renderNavigation(categories) {
         const navigationItems = [
             { category: 'all', label: 'Todo el catálogo', icon: '▦', count: books.length },
-            ...categories.map((category, index) => ({
-                category,
-                label: category,
-                icon: index === 0 ? '▤' : '▧',
-                count: books.filter(book => book.category === category).length
-            }))
+            ...categories.flatMap((category, index) => [
+                {
+                    category: categoryFilterKey(category.name),
+                    label: category.name,
+                    icon: index === 0 ? '▤' : '▧',
+                    count: books.filter(book => book.category === category.name).length
+                },
+                ...category.subcategories.map(subcategory => ({
+                    category: categoryFilterKey(category.name, subcategory),
+                    label: `${category.name} · ${subcategory}`,
+                    icon: '·',
+                    isSubcategory: true,
+                    count: books.filter(book =>
+                        book.category === category.name && book.subcategory === subcategory).length
+                }))
+            ])
         ];
         elements['side-navigation'].replaceChildren();
 
@@ -248,6 +368,7 @@
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'nav-link';
+            if (item.isSubcategory) button.classList.add('nav-link-subcategory');
             button.dataset.category = item.category;
             button.setAttribute('aria-current', item.category === activeCategory ? 'page' : 'false');
             if (item.category === activeCategory) button.classList.add('active');
@@ -279,8 +400,20 @@
     function renderBooks() {
         const search = elements['book-search'].value.trim().toLocaleLowerCase('es');
         const filtered = books.filter(book => {
-            const matchesCategory = activeCategory === 'all' || book.category === activeCategory;
-            const text = `${book.title} ${book.author} ${book.description} ${book.category}`.toLocaleLowerCase('es');
+            let selectedParent = '';
+            let selectedSubcategory = '';
+            if (activeCategory !== 'all') {
+                try {
+                    [selectedParent, selectedSubcategory] = JSON.parse(activeCategory);
+                } catch (error) {
+                    console.error('El filtro de categoría seleccionado no es válido:', error);
+                }
+            }
+            const matchesCategory = activeCategory === 'all'
+                || (book.category === selectedParent
+                    && (!selectedSubcategory || book.subcategory === selectedSubcategory));
+            const text = `${book.title} ${book.author} ${book.description} ${book.category} ${book.subcategory || ''}`
+                .toLocaleLowerCase('es');
             return matchesCategory && text.includes(search);
         });
 
@@ -300,11 +433,26 @@
             art.setAttribute('aria-hidden', 'true');
             const category = document.createElement('span');
             category.className = 'book-card-category';
-            category.textContent = book.category;
+            category.textContent = book.subcategory ? `${book.category} · ${book.subcategory}` : book.category;
             const icon = document.createElement('span');
             icon.className = 'book-art-icon';
             icon.textContent = book.icon;
             art.append(category, icon);
+            if (book.cover) {
+                art.classList.add('has-cover');
+                art.removeAttribute('aria-hidden');
+                const cover = document.createElement('img');
+                cover.className = 'book-cover-image';
+                cover.src = book.cover;
+                cover.alt = `Portada de ${book.title}`;
+                cover.loading = 'lazy';
+                cover.decoding = 'async';
+                cover.addEventListener('error', () => {
+                    art.classList.remove('has-cover');
+                    cover.remove();
+                }, { once: true });
+                art.appendChild(cover);
+            }
 
             const body = document.createElement('div');
             body.className = 'book-card-body';
@@ -334,7 +482,7 @@
         elements['catalog-view'].hidden = false;
         elements['reader-view'].hidden = true;
         elements['breadcrumb-current'].textContent = 'Catálogo';
-        document.title = 'Genuino | Biblioteca digital';
+        document.title = 'Luna Cloud Book | Biblioteca digital';
         closePdf();
     }
 
@@ -346,13 +494,18 @@
         elements['catalog-view'].hidden = true;
         elements['reader-view'].hidden = false;
         elements['reader-title'].textContent = book.title;
-        elements['reader-meta'].textContent = `${book.category} · ${book.author} · PDF`;
+        elements['reader-meta'].textContent =
+            `${book.category}${book.subcategory ? ` · ${book.subcategory}` : ''} · ${book.author} · PDF`;
         elements['breadcrumb-current'].textContent = book.title;
         elements['open-original'].href = book.file;
         elements['download-pdf'].href = book.file;
         elements['download-pdf'].download = book.file.split('/').pop();
         elements['reader-error'].hidden = true;
         elements['reading-progress-status'].hidden = true;
+        elements['bookmark-status'].hidden = true;
+        elements['bookmark-page'].disabled = true;
+        elements['bookmark-page'].setAttribute('aria-pressed', 'false');
+        elements['bookmark-page-label'].textContent = 'Marcar página';
         elements['reader-message'].hidden = false;
         elements['reader-message'].querySelector('strong').textContent = 'Cargando documento...';
         elements['pdf-render'].style.display = 'none';
@@ -362,7 +515,7 @@
         elements['prev-page'].disabled = true;
         elements['next-page'].disabled = true;
         elements['zoom-label'].textContent = 'Ajustar';
-        document.title = `${book.title} | Genuino`;
+        document.title = `${book.title} | Luna Cloud Book`;
         closeSidebar();
         cancelCurrentPdf();
 
@@ -384,6 +537,7 @@
             elements['page-count'].textContent = String(pdfDocument.numPages);
             elements['page-input'].max = String(pdfDocument.numPages);
             elements['next-page'].disabled = pdfDocument.numPages <= 1;
+            updateBookmarkControl();
             const savedPage = savedPageFor(book);
             const resumePage = Math.min(savedPage, pdfDocument.numPages);
             if (resumePage > 1) {
@@ -563,6 +717,7 @@
         });
 
         elements['back-to-catalog'].addEventListener('click', showCatalog);
+        elements['bookmark-page'].addEventListener('click', togglePageBookmark);
         elements['prev-page'].addEventListener('click', () => {
             goToPage((Number(elements['page-input'].value) || 1) - 1);
         });

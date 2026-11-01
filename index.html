@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#111827">
-    <meta name="description" content="Explora y lee documentos PDF de la biblioteca Genuino desde cualquier dispositivo.">
-    <title>Genuino | Biblioteca digital</title>
-    <link rel="stylesheet" href="styles.css?v=20261031-5">
+    <meta name="description" content="Explora y lee documentos PDF de Luna Cloud Book desde cualquier dispositivo.">
+    <title>Luna Cloud Book | Biblioteca digital</title>
+    <link rel="stylesheet" href="styles.css?v=20261031-7">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" defer></script>
-    <script src="script.js?v=20261031-5" defer></script>
+    <script src="script.js?v=20261031-7" defer></script>
 </head>
 <body>
     <div class="app-shell">
         <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
         <aside class="sidebar" id="sidebar" aria-label="Navegación de la biblioteca">
-            <a class="brand" href="./" aria-label="Genuino, inicio">
-                <span class="brand-mark" aria-hidden="true">G</span>
+            <a class="brand" href="./" aria-label="Luna Cloud Book, inicio">
+                <span class="brand-mark" aria-hidden="true">L</span>
                 <span>
-                    <strong>Genuino</strong>
+                    <strong>Luna Cloud Book</strong>
                     <small>Biblioteca digital</small>
                 </span>
             </a>
@@ -39,7 +39,7 @@
                     <p>Selecciona un documento para abrirlo en el visor.</p>
                 </div>
             </div>
-            <div class="sidebar-footer">GENUINO <span>·</span> LECTOR PDF</div>
+            <div class="sidebar-footer">LUNA CLOUD BOOK <span>·</span> LECTOR PDF</div>
         </aside>
 
         <div class="workspace">
@@ -126,8 +126,13 @@
                             <h2 id="reader-title">Documento</h2>
                             <p id="reader-meta"></p>
                             <p class="reading-progress-status" id="reading-progress-status" role="status" aria-live="polite" hidden></p>
+                            <p class="reading-progress-status bookmark-status" id="bookmark-status" role="status" aria-live="polite" hidden></p>
                         </div>
                         <div class="reader-actions">
+                            <button class="button button-secondary bookmark-button" id="bookmark-page" type="button" aria-pressed="false" disabled>
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.75A1.75 1.75 0 0 1 7.75 3h8.5A1.75 1.75 0 0 1 18 4.75V21l-6-4-6 4V4.75Z"/></svg>
+                                <span id="bookmark-page-label">Marcar página</span>
+                            </button>
                             <a class="button button-secondary" id="open-original" href="#" target="_blank" rel="noopener noreferrer">
                                 <span aria-hidden="true">↗</span> Abrir PDF
                             </a>
@@ -172,7 +177,7 @@
                 </section>
 
                 <footer class="page-footer">
-                    <span>Genuino · Biblioteca digital</span>
+                    <span>Luna Cloud Book · Biblioteca digital</span>
                     <span>Todos los derechos reservados © Laura Zelada &amp; Cioran · 2026</span>
                 </footer>
             </main>

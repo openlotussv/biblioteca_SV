@@ -1,4 +1,4 @@
-# Genuino · Biblioteca digital
+# Luna Cloud Book · Biblioteca digital
 
 Sitio estático para explorar y leer documentos PDF. Se publica en GitHub Pages
 y lee la lista de documentos desde `manifest.json`.
@@ -25,9 +25,20 @@ La primera vez:
 3. Usa **Publicar sitio inicial** para copiar el sitio y los PDFs locales a la
    rama `main`.
 
-Después, desde el gestor puedes agregar, editar y retirar libros. La publicación
-actualiza el manifiesto y los PDFs en un mismo commit. GitHub Pages puede tardar
-unos minutos en reflejar los cambios.
+Después, desde el gestor puedes crear categorías y subcategorías, agregar o
+editar documentos, asignarles una portada y retirar contenido. Las categorías,
+el manifiesto, los PDF optimizados y las portadas se publican en un mismo commit.
+GitHub Pages puede tardar unos minutos en reflejar los cambios.
+
+Antes de cargar documentos, instala el optimizador local desde PowerShell:
+
+```powershell
+python -m pip install --target C:\Users\Laulotus94\AppData\Local\GenuinoBiblioteca\python-packages -r C:\Apache24\htdocs\biblioteca_admin\requirements.txt
+```
+
+Los PDF se reescriben y linealizan sin rasterizar ni perder texto seleccionable.
+Las portadas se convierten a WebP, se redimensionan y se optimizan
+automáticamente. Una carga no se publica si falla la optimización o validación.
 
 El token se conserva en la carpeta local de configuración de Windows, fuera de
 `htdocs` y del repositorio. El gestor solo admite solicitudes originadas en el
@@ -35,16 +46,19 @@ equipo local.
 
 ## Agregar un PDF
 
-Usa **Gestionar biblioteca** desde la página local. El formulario carga el PDF,
-los metadatos y la publicación; no es necesario editar `manifest.json` a mano.
-Las rutas de los documentos deben conservar sus mayúsculas y minúsculas porque
-GitHub Pages las distingue.
+Usa **Gestionar biblioteca** desde la página local. Crea categorías como
+“Libros” y subcategorías como “Novelas”, y asígnalas a cada documento. Puedes
+subir una portada para reemplazar el icono de la tarjeta; sin portada se
+mantiene el icono. El gestor actualiza `manifest.json` y publica los archivos;
+no es necesario editar el repositorio a mano. Las rutas de los PDF deben
+conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
 
 ## Uso del lector
 
 - Busca con el campo superior o presiona `/` para enfocarlo.
 - Filtra por colección desde la navegación lateral o el selector.
 - Cambia de página con los controles o las flechas izquierda/derecha.
+- El avance se guarda automáticamente por documento, incluidos libros y material adicional; puedes guardar un marcador independiente para cada documento. Ambos datos se conservan solo en este navegador y dispositivo.
 - Ajusta el zoom, abre el PDF original o descárgalo.
 - En pantallas pequeñas, abre el menú con el botón superior izquierdo.
 
