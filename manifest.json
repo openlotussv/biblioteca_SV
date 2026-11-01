@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "updated_at": "2026-11-01T17:16:38+00:00",
+    "updated_at": "2026-11-01T17:23:34+00:00",
     "books": [
         {
             "id": "laura-zelada",
@@ -66,6 +66,19 @@
             "icon": "▤",
             "subcategory": "Autoayuda",
             "cover": "img/books/h-abitos-at-omicos.webp"
+        },
+        {
+            "id": "estudios-sociales-de-primer-grado",
+            "title": "ESTUDIOS SOCIALES DE PRIMER GRADO",
+            "author": "MINED",
+            "description": "En «El Salvador Aprende», tu plataforma para recursos educativos, ofrecemos gratis el Libro de Estudios Sociales MINED. Ideal para estudiantes que desean explorar la historia, geografía y cultura de El Salvador desde primer grado. Aunque no poseemos los libros, garantizamos su obtención legítima y segura.\n\nEste libro es un recurso clave para fomentar el conocimiento y la conciencia social en jóvenes estudiantes. Visita «El Salvador Aprende» y enriquece tu aprendizaje con el Libro de Estudios Sociales MINED, directamente desde fuentes oficiales.",
+            "category": "Libros",
+            "file": "documentos/estudios-sociales-de-primer-grado.pdf",
+            "size": "10.3 MB",
+            "color": "blue",
+            "icon": "▤",
+            "subcategory": "Estudios Sociales",
+            "cover": "img/books/estudios-sociales-de-primer-grado.webp"
         }
     ],
     "categories": [
