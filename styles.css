@@ -201,12 +201,15 @@ html[data-theme="dark"] .theme-icon-sun { display: block; }
 .pdf-side-button:disabled { cursor: not-allowed; opacity: .35; }
 .pdf-side-button-previous { left: 10px; }
 .pdf-side-button-next { right: 10px; }
+.pdf-fullscreen-exit { display: none; }
 .pdf-page-status { position: absolute; z-index: 5; right: 18px; bottom: 18px; left: auto; display: none; max-width: min(420px,calc(100% - 36px)); overflow: hidden; padding: 8px 13px; border: 1px solid #ffffff5c; border-radius: 10px; background: #172235d9; color: #fff; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; backdrop-filter: blur(8px); }
-.pdf-stage:fullscreen { width: 100vw; height: 100vh; min-height: 100vh; max-height: 100vh; align-items: flex-start; padding: 24px; border: 0; border-radius: 0; background: #111827; }
-.pdf-stage:fullscreen .pdf-side-button { position: fixed; top: 50vh; display: grid; width: 54px; height: 68px; }
-.pdf-stage:fullscreen .pdf-side-button-previous { left: 18px; }
-.pdf-stage:fullscreen .pdf-side-button-next { right: 18px; }
-.pdf-stage:fullscreen .pdf-page-status:not([hidden]) { position: fixed; right: 18px; bottom: 18px; display: block; animation: pdf-status-in .18s ease-out; }
+.pdf-stage:fullscreen, .pdf-stage.pdf-stage--fullscreen-fallback { width: 100vw; height: 100vh; height: 100dvh; min-height: 100vh; min-height: 100dvh; max-height: 100vh; max-height: 100dvh; align-items: flex-start; padding: 24px; border: 0; border-radius: 0; background: #111827; }
+.pdf-stage.pdf-stage--fullscreen-fallback { position: fixed; inset: 0; z-index: 50; overflow: auto; }
+.pdf-stage:fullscreen .pdf-side-button, .pdf-stage.pdf-stage--fullscreen-fallback .pdf-side-button { position: fixed; top: 50vh; display: grid; width: 54px; height: 68px; }
+.pdf-stage:fullscreen .pdf-side-button-previous, .pdf-stage.pdf-stage--fullscreen-fallback .pdf-side-button-previous { left: 18px; }
+.pdf-stage:fullscreen .pdf-side-button-next, .pdf-stage.pdf-stage--fullscreen-fallback .pdf-side-button-next { right: 18px; }
+.pdf-stage:fullscreen .pdf-page-status:not([hidden]), .pdf-stage.pdf-stage--fullscreen-fallback .pdf-page-status:not([hidden]) { position: fixed; right: 18px; bottom: 18px; display: block; animation: pdf-status-in .18s ease-out; }
+.pdf-stage.pdf-stage--fullscreen-fallback .pdf-fullscreen-exit { position: fixed; z-index: 6; top: 14px; right: 14px; display: grid; width: 42px; height: 42px; place-items: center; padding: 0 0 4px; border: 1px solid #ffffff70; border-radius: 50%; background: #172235d9; color: #fff; font-size: 30px; line-height: 1; cursor: pointer; }
 @keyframes pdf-status-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .reader-message, .reader-error { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 25px; color: #68758a; text-align: center; }
 .reader-message strong, .reader-error strong { margin-top: 12px; color: #3d4a5e; font-size: 13px; }
@@ -394,9 +397,13 @@ html[data-theme="dark"] .pagination-button:hover:not(:disabled):not([aria-curren
     .page-controls, .zoom-controls { gap: 5px; }
     .reader-toolbar .icon-button { width: 28px; height: 28px; flex-basis: 28px; }
     #zoom-label { min-width: 39px; font-size: 9px; }
-    .fullscreen-button { display: none; }
     .pdf-stage { min-height: 330px; max-height: 66vh; padding: 8px; }
     .page-footer { flex-direction: column; gap: 6px; font-size: 8px; }
+}
+
+@media (max-width: 1100px) and (pointer: coarse) {
+    .pdf-stage:fullscreen .pdf-side-button,
+    .pdf-stage.pdf-stage--fullscreen-fallback .pdf-side-button { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

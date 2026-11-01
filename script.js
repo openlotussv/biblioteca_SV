@@ -1143,16 +1143,46 @@
         });
         elements['close-sidebar'].addEventListener('click', closeSidebar);
         elements['sidebar-backdrop'].addEventListener('click', closeSidebar);
+        const fallbackFullscreenExit = document.getElementById('exit-fullscreen-fallback');
+        const setFallbackFullscreen = active => {
+            elements['pdf-stage'].classList.toggle('pdf-stage--fullscreen-fallback', active);
+            fallbackFullscreenExit.hidden = !active;
+            if (active) return;
+            clearTimeout(pageStatusTimer);
+            pageStatusTimer = null;
+            elements['pdf-page-status'].hidden = true;
+        };
         elements['toggle-fullscreen'].addEventListener('click', async () => {
             try {
-                if (!document.fullscreenElement) await elements['pdf-stage'].requestFullscreen();
-                else await document.exitFullscreen();
+                if (elements['pdf-stage'].classList.contains('pdf-stage--fullscreen-fallback')) {
+                    setFallbackFullscreen(false);
+                } else if (document.fullscreenElement) {
+                    await document.exitFullscreen();
+                } else if (typeof elements['pdf-stage'].requestFullscreen === 'function') {
+                    try {
+                        await elements['pdf-stage'].requestFullscreen();
+                    } catch (error) {
+                        console.error('No se pudo activar la pantalla completa nativa:', error);
+                        setFallbackFullscreen(true);
+                    }
+                } else {
+                    setFallbackFullscreen(true);
+                }
             } catch (error) {
                 console.error('No se pudo activar la pantalla completa:', error);
             }
         });
+        fallbackFullscreenExit.addEventListener('click', () => {
+            setFallbackFullscreen(false);
+        });
         document.addEventListener('fullscreenchange', () => {
-            if (document.fullscreenElement) return;
+            const isFullscreen = Boolean(document.fullscreenElement);
+            elements['toggle-fullscreen'].setAttribute(
+                'aria-label',
+                isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'
+            );
+            elements['toggle-fullscreen'].title = isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa';
+            if (isFullscreen) return;
             clearTimeout(pageStatusTimer);
             pageStatusTimer = null;
             elements['pdf-page-status'].hidden = true;
@@ -1169,6 +1199,9 @@
             } else if (event.key === 'ArrowRight' && pdfDocument
                 && currentPageNumber < pdfDocument.numPages) {
                 goToPage(currentPageNumber + 1);
+            } else if (event.key === 'Escape'
+                && elements['pdf-stage'].classList.contains('pdf-stage--fullscreen-fallback')) {
+                setFallbackFullscreen(false);
             } else if (event.key === 'Escape') {
                 closeSidebar();
             }
