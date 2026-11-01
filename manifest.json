@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "updated_at": "2026-11-01T01:10:47+00:00",
+    "updated_at": "2026-11-01T01:21:43+00:00",
     "books": [
         {
             "id": "laura-zelada",
@@ -17,12 +17,14 @@
             "id": "ben-reilly",
             "title": "Ben Reilly Spider-Man · Tomo #1",
             "author": "Colección de lectura",
-            "description": "Documento de lectura en formato PDF.",
+            "description": "Documento de lectura en formato PDF.\n\nSigue las aventuras del Spiderman TOMO#1",
             "category": "Libros",
             "file": "documentos/BENREILYSPIDERMANTOMO1.pdf",
             "size": "22.6 MB",
             "color": "purple",
-            "icon": "▤"
+            "icon": "▤",
+            "subcategory": "Comics",
+            "cover": "img/books/ben-reilly.webp"
         },
         {
             "id": "menu-prueba",
