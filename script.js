@@ -93,7 +93,7 @@
             'side-navigation', 'book-search', 'book-count', 'category-count',
             'catalog-summary', 'category-filter', 'result-count', 'book-grid', 'catalog-pagination',
             'empty-state', 'catalog-notice', 'local-manager-link', 'catalog-view', 'reader-view', 'reader-title',
-            'page-eyebrow', 'page-title-main', 'page-title-accent', 'page-subtitle', 'cover-link', 'cover-image',
+            'page-eyebrow', 'page-title-main', 'page-title-accent', 'page-subtitle', 'cover-display', 'cover-image',
             'reader-meta', 'breadcrumb-current', 'open-original', 'download-pdf',
             'page-input', 'page-count', 'prev-page', 'next-page', 'zoom-label',
             'zoom-out', 'zoom-in', 'toggle-fullscreen', 'pdf-stage', 'pdf-render',
@@ -423,9 +423,8 @@
             elements['page-title-main'].textContent = settings.title;
             elements['page-title-accent'].textContent = settings.accent;
             elements['page-subtitle'].textContent = settings.subtitle;
-            elements['cover-link'].href = settings.cover;
             elements['cover-image'].src = settings.cover;
-            elements['cover-link'].hidden = false;
+            elements['cover-display'].hidden = false;
         } catch (error) {
             console.error('No se pudo cargar la configuración de la página:', error);
             elements['catalog-notice'].textContent =

@@ -6,16 +6,21 @@
     <meta name="theme-color" content="#111827">
     <meta name="description" content="Explora y lee documentos PDF de Luna Cloud Book desde cualquier dispositivo.">
     <title>Luna Cloud Book | Biblioteca digital</title>
-    <link rel="stylesheet" href="styles.css?v=20261101-1">
+    <link rel="stylesheet" href="styles.css?v=20261101-2">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" defer></script>
-    <script src="script.js?v=20261031-9" defer></script>
+    <script src="script.js?v=20261101-2" defer></script>
 </head>
 <body>
     <div class="app-shell">
         <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
         <aside class="sidebar" id="sidebar" aria-label="Navegación de la biblioteca">
             <a class="brand" href="./" aria-label="Luna Cloud Book, inicio">
-                <span class="brand-mark" aria-hidden="true">L</span>
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                        <path d="M19.4 15.2A8.2 8.2 0 0 1 8.8 4.6a8.6 8.6 0 1 0 10.6 10.6Z"/>
+                        <path d="m17.7 4.2.45 1.25 1.25.45-1.25.45-.45 1.25-.45-1.25L16 5.9l1.25-.45.45-1.25Z"/>
+                    </svg>
+                </span>
                 <span>
                     <strong>Luna Cloud Book</strong>
                     <small>Biblioteca digital</small>
@@ -73,10 +78,9 @@
                         <h1 id="page-title"><span id="page-title-main">Tu biblioteca,</span> <span id="page-title-accent">a un clic.</span></h1>
                         <p class="page-subtitle" id="page-subtitle">Explora el catálogo y continúa leyendo desde cualquier dispositivo.</p>
                     </div>
-                    <a class="cover-link" id="cover-link" href="img/portada.jpg" target="_blank" rel="noopener noreferrer">
-                        <img id="cover-image" src="img/portada.jpg" alt="" onerror="this.closest('.cover-link').hidden = true">
-                        <span>Explorar biblioteca <b aria-hidden="true">→</b></span>
-                    </a>
+                    <figure class="cover-display" id="cover-display">
+                        <img id="cover-image" src="img/portada.jpg" alt="" onerror="this.closest('.cover-display').hidden = true">
+                    </figure>
                 </section>
 
                 <section class="stats-grid" aria-label="Resumen del catálogo">
