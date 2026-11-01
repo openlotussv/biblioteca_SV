@@ -1,39 +1,51 @@
 {
-  "version": 1,
-  "updated_at": "2026-10-31T22:00:00Z",
-  "books": [
-    {
-      "id": "laura-zelada",
-      "title": "Libro 1",
-      "author": "Laura Zelada",
-      "description": "Lectura digital de la colección de Laura Zelada.",
-      "category": "Libros",
-      "file": "documentos/pruebaLauraZelada.pdf",
-      "size": "2.8 MB",
-      "color": "blue",
-      "icon": "▤"
-    },
-    {
-      "id": "ben-reilly",
-      "title": "Ben Reilly Spider-Man · Tomo #1",
-      "author": "Colección de lectura",
-      "description": "Documento de lectura en formato PDF.",
-      "category": "Libros",
-      "file": "documentos/BENREILYSPIDERMANTOMO1.pdf",
-      "size": "22.6 MB",
-      "color": "purple",
-      "icon": "▤"
-    },
-    {
-      "id": "menu-prueba",
-      "title": "Menú de prueba",
-      "author": "Material adicional",
-      "description": "Documento PDF adicional disponible en la biblioteca.",
-      "category": "Material adicional",
-      "file": "documentos/MENUPRUEBA.pdf",
-      "size": "1.1 MB",
-      "color": "green",
-      "icon": "▧"
-    }
-  ]
+    "version": 1,
+    "updated_at": "2026-11-01T01:10:47+00:00",
+    "books": [
+        {
+            "id": "laura-zelada",
+            "title": "Libro 1",
+            "author": "Laura Zelada",
+            "description": "Lectura digital de la colección de Laura Zelada.",
+            "category": "Libros",
+            "file": "documentos/pruebaLauraZelada.pdf",
+            "size": "2.8 MB",
+            "color": "blue",
+            "icon": "▤"
+        },
+        {
+            "id": "ben-reilly",
+            "title": "Ben Reilly Spider-Man · Tomo #1",
+            "author": "Colección de lectura",
+            "description": "Documento de lectura en formato PDF.",
+            "category": "Libros",
+            "file": "documentos/BENREILYSPIDERMANTOMO1.pdf",
+            "size": "22.6 MB",
+            "color": "purple",
+            "icon": "▤"
+        },
+        {
+            "id": "menu-prueba",
+            "title": "Menú de prueba",
+            "author": "Material adicional",
+            "description": "Documento PDF adicional disponible en la biblioteca.",
+            "category": "Material adicional",
+            "file": "documentos/MENUPRUEBA.pdf",
+            "size": "1.1 MB",
+            "color": "green",
+            "icon": "▧"
+        }
+    ],
+    "categories": [
+        {
+            "name": "Libros",
+            "subcategories": [
+                "Comics"
+            ]
+        },
+        {
+            "name": "Material adicional",
+            "subcategories": []
+        }
+    ]
 }
