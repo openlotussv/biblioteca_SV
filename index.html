@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#111827">
     <meta name="description" content="Explora y lee documentos PDF de la biblioteca Genuino desde cualquier dispositivo.">
     <title>Genuino | Biblioteca digital</title>
-    <link rel="stylesheet" href="styles.css?v=20261031-2">
+    <link rel="stylesheet" href="styles.css?v=20261031-5">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" defer></script>
-    <script src="script.js?v=20261031-2" defer></script>
+    <script src="script.js?v=20261031-5" defer></script>
 </head>
 <body>
     <div class="app-shell">
@@ -52,12 +52,18 @@
                     </button>
                     <div class="breadcrumb"><span>Biblioteca</span><span aria-hidden="true">/</span><strong id="breadcrumb-current">Catálogo</strong></div>
                 </div>
-                <label class="global-search">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
-                    <span class="sr-only">Buscar documentos</span>
-                    <input id="book-search" type="search" placeholder="Buscar un libro o documento..." autocomplete="off">
-                    <kbd>/</kbd>
-                </label>
+                <div class="topbar-actions">
+                    <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+                        <svg class="theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.3A8.5 8.5 0 0 1 8.7 3.8 8.6 8.6 0 1 0 20.2 15.3Z"/></svg>
+                        <svg class="theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+                    </button>
+                    <label class="global-search">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+                        <span class="sr-only">Buscar documentos</span>
+                        <input id="book-search" type="search" placeholder="Buscar un libro o documento..." autocomplete="off">
+                        <kbd>/</kbd>
+                    </label>
+                </div>
             </header>
 
             <main class="main-content">
@@ -119,6 +125,7 @@
                             </button>
                             <h2 id="reader-title">Documento</h2>
                             <p id="reader-meta"></p>
+                            <p class="reading-progress-status" id="reading-progress-status" role="status" aria-live="polite" hidden></p>
                         </div>
                         <div class="reader-actions">
                             <a class="button button-secondary" id="open-original" href="#" target="_blank" rel="noopener noreferrer">

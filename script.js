@@ -48,6 +48,10 @@
     let zoom = 1;
     let resizeTimer = null;
     let lastPdfStageWidth = 0;
+    let currentPageNumber = 1;
+    let pdfLayoutReady = false;
+    const themeStorageKey = 'genuino-library-theme-v1';
+    const progressStoragePrefix = 'genuino-library-progress-v1:';
 
     function byId(id) {
         return document.getElementById(id);
@@ -77,10 +81,73 @@
             'page-input', 'page-count', 'prev-page', 'next-page', 'zoom-label',
             'zoom-out', 'zoom-in', 'toggle-fullscreen', 'pdf-stage', 'pdf-render',
             'reader-message', 'reader-error', 'reader-error-detail', 'retry-pdf',
-            'back-to-catalog', 'toggle-sidebar', 'close-sidebar', 'sidebar', 'sidebar-backdrop'
+            'back-to-catalog', 'toggle-sidebar', 'close-sidebar', 'sidebar', 'sidebar-backdrop',
+            'theme-toggle', 'reading-progress-status'
         ].forEach(id => {
             elements[id] = byId(id);
         });
+    }
+
+    function setTheme(theme, persist = true) {
+        const isDark = theme === 'dark';
+        document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+        elements['theme-toggle'].setAttribute('aria-pressed', String(isDark));
+        elements['theme-toggle'].setAttribute(
+            'aria-label',
+            isDark ? 'Activar modo claro' : 'Activar modo oscuro'
+        );
+        elements['theme-toggle'].title = isDark ? 'Modo oscuro · activar modo claro' : 'Modo claro · activar modo oscuro';
+        if (!persist) return;
+        try {
+            localStorage.setItem(themeStorageKey, isDark ? 'dark' : 'light');
+        } catch (error) {
+            console.error('No se pudo guardar el tema en este navegador:', error);
+            showStorageWarning('No se pudo guardar el modo de color en este navegador.');
+        }
+    }
+
+    function initializeTheme() {
+        let theme = 'light';
+        try {
+            theme = localStorage.getItem(themeStorageKey) === 'dark' ? 'dark' : 'light';
+        } catch (error) {
+            console.error('No se pudo leer el modo de color guardado:', error);
+            showStorageWarning('No se pudo leer la preferencia de color de este navegador.');
+        }
+        setTheme(theme, false);
+    }
+
+    function showStorageWarning(message) {
+        elements['catalog-notice'].textContent = message;
+        elements['catalog-notice'].hidden = false;
+    }
+
+    function savedPageFor(book) {
+        try {
+            const page = Number.parseInt(localStorage.getItem(progressStoragePrefix + book.id), 10);
+            return Number.isInteger(page) && page > 0 ? page : 1;
+        } catch (error) {
+            console.error('No se pudo leer el avance guardado en este navegador:', error);
+            elements['reading-progress-status'].textContent =
+                'No se pudo leer el avance guardado en este navegador.';
+            elements['reading-progress-status'].hidden = false;
+            return 1;
+        }
+    }
+
+    function saveCurrentPage(pageNumber) {
+        if (!activeBook) return;
+        try {
+            localStorage.setItem(progressStoragePrefix + activeBook.id, String(pageNumber));
+            elements['reading-progress-status'].textContent =
+                'Avance guardado en este navegador y dispositivo.';
+            elements['reading-progress-status'].hidden = false;
+        } catch (error) {
+            console.error('No se pudo guardar el avance de lectura:', error);
+            elements['reading-progress-status'].textContent =
+                'No se pudo guardar el avance. Revisa el almacenamiento de este navegador.';
+            elements['reading-progress-status'].hidden = false;
+        }
     }
 
     function initializeCatalog() {
@@ -273,6 +340,8 @@
 
     async function openBook(book) {
         activeBook = book;
+        currentPageNumber = 1;
+        pdfLayoutReady = false;
         zoom = 1;
         elements['catalog-view'].hidden = true;
         elements['reader-view'].hidden = false;
@@ -283,6 +352,7 @@
         elements['download-pdf'].href = book.file;
         elements['download-pdf'].download = book.file.split('/').pop();
         elements['reader-error'].hidden = true;
+        elements['reading-progress-status'].hidden = true;
         elements['reader-message'].hidden = false;
         elements['reader-message'].querySelector('strong').textContent = 'Cargando documento...';
         elements['pdf-render'].style.display = 'none';
@@ -314,9 +384,25 @@
             elements['page-count'].textContent = String(pdfDocument.numPages);
             elements['page-input'].max = String(pdfDocument.numPages);
             elements['next-page'].disabled = pdfDocument.numPages <= 1;
+            const savedPage = savedPageFor(book);
+            const resumePage = Math.min(savedPage, pdfDocument.numPages);
+            if (resumePage > 1) {
+                elements['reading-progress-status'].textContent =
+                    `Continuando desde la página ${resumePage}. El avance se guarda en este navegador y dispositivo.`;
+                elements['reading-progress-status'].hidden = false;
+            } else if (elements['reading-progress-status'].hidden) {
+                elements['reading-progress-status'].textContent =
+                    'El avance de lectura se guarda en este navegador y dispositivo.';
+                elements['reading-progress-status'].hidden = false;
+            }
             elements['reader-message'].hidden = true;
             elements['pdf-render'].style.display = 'block';
-            await renderPage(1);
+            await renderPage(resumePage);
+            pdfLayoutReady = activeBook === book && currentPageNumber === resumePage;
+            if (resumePage > 1 && pdfLayoutReady) {
+                elements['reading-progress-status'].textContent =
+                    `Continuando desde la página ${resumePage}. El avance se guarda en este navegador y dispositivo.`;
+            }
         } catch (error) {
             if (sequence !== renderSequence || error?.name === 'RenderingCancelledException') return;
             loadingTask = null;
@@ -369,14 +455,17 @@
             canvas.height = renderCanvas.height;
             canvas.style.width = `${Math.floor(viewport.width)}px`;
             canvas.style.height = `${Math.floor(viewport.height)}px`;
+            canvas.classList.toggle('pdf-swipe-enabled', viewport.width <= availableWidth);
             const visibleContext = canvas.getContext('2d', { alpha: false });
             if (!visibleContext) throw new Error('No se pudo actualizar el visor PDF.');
             visibleContext.drawImage(renderCanvas, 0, 0);
 
             elements['page-input'].value = String(pageNumber);
+            currentPageNumber = pageNumber;
             elements['prev-page'].disabled = pageNumber <= 1;
             elements['next-page'].disabled = pageNumber >= pdfDocument.numPages;
             elements['zoom-label'].textContent = zoom === 1 ? 'Ajustar' : `${Math.round(zoom * 100)}%`;
+            saveCurrentPage(pageNumber);
         } catch (error) {
             if (error?.name !== 'RenderingCancelledException') {
                 console.error('Error al renderizar la página:', error);
@@ -414,6 +503,7 @@
     function closePdf() {
         cancelCurrentPdf();
         activeBook = null;
+        pdfLayoutReady = false;
         elements['pdf-render'].style.display = 'none';
     }
 
@@ -456,6 +546,9 @@
     }
 
     function connectEvents() {
+        elements['theme-toggle'].addEventListener('click', () => {
+            setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+        });
         elements['book-search'].addEventListener('input', () => {
             activeCategory = elements['category-filter'].value;
             renderNavigation(getCategories());
@@ -475,6 +568,27 @@
         });
         elements['next-page'].addEventListener('click', () => {
             goToPage((Number(elements['page-input'].value) || 1) + 1);
+        });
+        let touchStart = null;
+        elements['pdf-render'].addEventListener('pointerdown', event => {
+            if (event.pointerType !== 'touch' || !event.isPrimary
+                || !elements['pdf-render'].classList.contains('pdf-swipe-enabled')) {
+                touchStart = null;
+                return;
+            }
+            touchStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+        });
+        elements['pdf-render'].addEventListener('pointerup', event => {
+            if (!touchStart || event.pointerId !== touchStart.pointerId) return;
+            const deltaX = event.clientX - touchStart.x;
+            const deltaY = event.clientY - touchStart.y;
+            touchStart = null;
+            if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) return;
+            const currentPage = Number(elements['page-input'].value) || 1;
+            goToPage(currentPage + (deltaX < 0 ? 1 : -1));
+        });
+        elements['pdf-render'].addEventListener('pointercancel', () => {
+            touchStart = null;
         });
         elements['page-input'].addEventListener('change', event => goToPage(event.target.value));
         elements['page-input'].addEventListener('keydown', event => {
@@ -524,9 +638,9 @@
         });
 
         function schedulePdfFit() {
-            if (!pdfDocument) return;
+            if (!pdfDocument || !pdfLayoutReady) return;
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => goToPage(elements['page-input'].value), 120);
+            resizeTimer = setTimeout(() => goToPage(currentPageNumber), 120);
         }
 
         if ('ResizeObserver' in window) {
@@ -544,6 +658,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         initializeElements();
+        initializeTheme();
         connectEvents();
         const mobileLayout = window.matchMedia('(max-width: 760px)').matches;
         elements['toggle-sidebar'].setAttribute('aria-expanded', String(!mobileLayout));
