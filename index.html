@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#111827">
     <meta name="description" content="Explora y lee documentos PDF de Luna Cloud Book desde cualquier dispositivo.">
     <title>Luna Cloud Book | Biblioteca digital</title>
-    <link rel="stylesheet" href="styles.css?v=20261101-8">
+    <link rel="stylesheet" href="styles.css?v=20261101-9">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" defer></script>
-    <script src="script.js?v=20261101-13" defer></script>
+    <script src="script.js?v=20261101-14" defer></script>
 </head>
 <body>
     <div class="app-shell">
@@ -184,6 +184,7 @@
                                 type="button" aria-label="Página siguiente" title="Página siguiente" disabled>›</button>
                         <button class="pdf-fullscreen-exit" id="exit-fullscreen-fallback" type="button"
                                 aria-label="Salir de pantalla completa" title="Salir de pantalla completa" hidden>×</button>
+                        <div class="pdf-fullscreen-title" id="pdf-fullscreen-title" aria-hidden="true"></div>
                         <div class="pdf-page-status" id="pdf-page-status" role="status" aria-live="polite" hidden>
                             Avance guardado en este dispositivo
                         </div>

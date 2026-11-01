@@ -102,7 +102,7 @@
             'page-input', 'page-count', 'prev-page', 'next-page', 'zoom-label',
             'zoom-out', 'zoom-in', 'toggle-fullscreen', 'pdf-stage', 'pdf-render',
             'pdf-page-stack', 'pdf-next-render', 'prev-page-overlay', 'next-page-overlay',
-            'pdf-page-status',
+            'pdf-page-status', 'pdf-fullscreen-title',
             'reader-message', 'reader-error', 'reader-error-detail', 'retry-pdf',
             'back-to-catalog', 'toggle-sidebar', 'close-sidebar', 'sidebar', 'sidebar-backdrop',
             'theme-toggle', 'reading-progress-status', 'bookmark-page', 'bookmark-page-label',
@@ -792,6 +792,7 @@
         elements['pdf-page-status'].textContent = 'Cargando página…';
         elements['zoom-label'].textContent = 'Ajustar';
         document.title = `${book.title} | Luna Cloud Book`;
+        elements['pdf-fullscreen-title'].textContent = book.title;
         closeSidebar();
         cancelCurrentPdf();
 
