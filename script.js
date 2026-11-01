@@ -1100,6 +1100,28 @@
             goToPage(currentPageNumber + 1);
         });
         let dragStart = null;
+        let touchDragStart = null;
+        const isReaderFullscreen = () => document.fullscreenElement === elements['pdf-stage']
+            || elements['pdf-stage'].classList.contains('pdf-stage--fullscreen-fallback');
+        const isAtHorizontalEdge = direction => {
+            const stage = elements['pdf-stage'];
+            const maxScrollLeft = stage.scrollWidth - stage.clientWidth;
+            return direction > 0
+                ? stage.scrollLeft >= maxScrollLeft - 8
+                : stage.scrollLeft <= 8;
+        };
+        const turnFromZoomedEdge = (deltaX, deltaY) => {
+            if (!isReaderFullscreen() || elements['pdf-render'].classList.contains('pdf-swipe-enabled')
+                || Math.abs(deltaX) < 52 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) {
+                return false;
+            }
+            const direction = deltaX < 0 ? 1 : -1;
+            if (!isAtHorizontalEdge(direction)) return false;
+            elements['pdf-stage'].scrollLeft = 0;
+            elements['pdf-stage'].scrollTop = 0;
+            goToPage(currentPageNumber + direction);
+            return true;
+        };
         elements['pdf-render'].addEventListener('pointerdown', event => {
             const pageFits = elements['pdf-render'].classList.contains('pdf-swipe-enabled');
             if (!event.isPrimary || (event.pointerType !== 'mouse' && !pageFits)) {
@@ -1135,11 +1157,39 @@
             const { pageFits } = dragStart;
             dragStart = null;
             elements['pdf-stage'].classList.remove('pdf-dragging');
-            if (!pageFits || Math.abs(deltaX) < 52
-                || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) return;
+            if (!pageFits) {
+                turnFromZoomedEdge(deltaX, deltaY);
+                return;
+            }
+            if (Math.abs(deltaX) < 52 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) return;
             const currentPage = currentPageNumber;
             goToPage(currentPage + (deltaX < 0 ? 1 : -1));
         });
+        elements['pdf-stage'].addEventListener('touchstart', event => {
+            if (event.touches.length !== 1 || !isReaderFullscreen()
+                || elements['pdf-render'].classList.contains('pdf-swipe-enabled')
+                || !elements['pdf-render'].contains(event.target)) {
+                touchDragStart = null;
+                return;
+            }
+            touchDragStart = {
+                x: event.touches[0].clientX,
+                y: event.touches[0].clientY
+            };
+        }, { passive: true });
+        elements['pdf-stage'].addEventListener('touchend', event => {
+            if (!touchDragStart || event.changedTouches.length !== 1) {
+                touchDragStart = null;
+                return;
+            }
+            const deltaX = event.changedTouches[0].clientX - touchDragStart.x;
+            const deltaY = event.changedTouches[0].clientY - touchDragStart.y;
+            touchDragStart = null;
+            turnFromZoomedEdge(deltaX, deltaY);
+        }, { passive: true });
+        elements['pdf-stage'].addEventListener('touchcancel', () => {
+            touchDragStart = null;
+        }, { passive: true });
         document.addEventListener('pointercancel', () => {
             dragStart = null;
             elements['pdf-stage'].classList.remove('pdf-dragging');

@@ -85,7 +85,9 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
   izquierda indica la página actual y el total. En móvil, el estado de guardado
   aparece como indicador animado y luego como un check; en PC conserva el mensaje
   completo. Los controles y los indicadores permanecen anclados a la pantalla al
-  desplazar una página ampliada. En PC puedes arrastrar
+  desplazar una página ampliada. En pantalla completa, al arrastrar hacia fuera
+  desde el borde izquierdo o derecho de una página ampliada se cambia de página.
+  En PC puedes arrastrar
   para recorrer una página ampliada; el avance se recuerda por documento en este
   navegador.
 - En pantallas pequeñas, abre el menú con el botón superior izquierdo.
