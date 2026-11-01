@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "updated_at": "2026-11-01T01:38:41+00:00",
+    "updated_at": "2026-11-01T01:42:54+00:00",
     "books": [
         {
             "id": "laura-zelada",
@@ -40,6 +40,19 @@
             "icon": "▧",
             "subcategory": "Educativo",
             "cover": "img/books/menu-prueba.webp"
+        },
+        {
+            "id": "por-si-las-voces-vuelven",
+            "title": "POR SI LAS VOCES VUELVEN",
+            "author": "ÁNGEL MARTÍN",
+            "description": "Publicado por Planeta en 2021, es un testimonio autobiográfico en primera persona sobre su brote psicótico de 2017.  El libro narra cómo el autor perdió el contacto con la realidad, escuchando voces y desarrollando delirios que lo llevaron a estar atado a la cama en un hospital psiquiátrico durante 14 días",
+            "category": "Libros",
+            "file": "documentos/por-si-las-voces-vuelven.pdf",
+            "size": "0.5 MB",
+            "color": "blue",
+            "icon": "▤",
+            "subcategory": "Psicología",
+            "cover": "img/books/por-si-las-voces-vuelven.webp"
         }
     ],
     "categories": [
