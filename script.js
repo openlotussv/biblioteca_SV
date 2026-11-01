@@ -44,6 +44,7 @@
     let categoryDefinitions = [];
     const elements = {};
     let activeCategory = 'all';
+    let expandedCategories = [];
     const catalogPageSize = 10;
     let currentCatalogPage = 1;
     let catalogLoaded = false;
@@ -161,6 +162,11 @@
             if (typeof state.lastBookId === 'string' && /^[a-z0-9-]+$/.test(state.lastBookId)) {
                 lastOpenedBookId = state.lastBookId;
             }
+            if (Array.isArray(state.expandedCategories)
+                && state.expandedCategories.every(category =>
+                    typeof category === 'string' && category.length <= 80)) {
+                expandedCategories = [...new Set(state.expandedCategories)];
+            }
             if (typeof state.sidebarCollapsed === 'boolean') {
                 document.querySelector('.app-shell')
                     .classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
@@ -178,7 +184,8 @@
             catalogPage: currentCatalogPage,
             sidebarCollapsed: document.querySelector('.app-shell')
                 .classList.contains('sidebar-collapsed'),
-            lastBookId: lastOpenedBookId
+            lastBookId: lastOpenedBookId,
+            expandedCategories
         };
         try {
             localStorage.setItem(appStateStorageKey, JSON.stringify(state));
@@ -448,32 +455,13 @@
     }
 
     function renderNavigation(categories) {
-        const navigationItems = [
-            { category: 'all', label: 'Todo el catálogo', icon: '▦', count: books.length },
-            ...categories.flatMap((category, index) => [
-                {
-                    category: categoryFilterKey(category.name),
-                    label: category.name,
-                    icon: index === 0 ? '▤' : '▧',
-                    count: books.filter(book => book.category === category.name).length
-                },
-                ...category.subcategories.map(subcategory => ({
-                    category: categoryFilterKey(category.name, subcategory),
-                    label: `${category.name} · ${subcategory}`,
-                    icon: '·',
-                    isSubcategory: true,
-                    count: books.filter(book =>
-                        book.category === category.name && book.subcategory === subcategory).length
-                }))
-            ])
-        ];
         elements['side-navigation'].replaceChildren();
 
-        navigationItems.forEach(item => {
+        function createFilterButton(item, parentCategory = '') {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'nav-link';
-            if (item.isSubcategory) button.classList.add('nav-link-subcategory');
+            if (parentCategory) button.classList.add('nav-link-subcategory');
             button.dataset.category = item.category;
             button.setAttribute('aria-current', item.category === activeCategory ? 'page' : 'false');
             if (item.category === activeCategory) button.classList.add('active');
@@ -491,6 +479,9 @@
             button.append(icon, label, count);
             button.addEventListener('click', () => {
                 activeCategory = item.category;
+                if (parentCategory && !expandedCategories.includes(parentCategory)) {
+                    expandedCategories.push(parentCategory);
+                }
                 currentCatalogPage = 1;
                 elements['category-filter'].value = item.category;
                 elements['book-search'].value = '';
@@ -500,7 +491,69 @@
                 showCatalog();
                 closeSidebar();
             });
-            elements['side-navigation'].appendChild(button);
+            return button;
+        }
+
+        elements['side-navigation'].appendChild(createFilterButton({
+            category: 'all',
+            label: 'Todo el catálogo',
+            icon: '▦',
+            count: books.length
+        }));
+
+        categories.forEach((category, index) => {
+            const group = document.createElement('section');
+            group.className = 'nav-category-group';
+            const heading = document.createElement('div');
+            heading.className = 'nav-category-heading';
+            heading.appendChild(createFilterButton({
+                category: categoryFilterKey(category.name),
+                label: category.name,
+                icon: index === 0 ? '▤' : '▧',
+                count: books.filter(book => book.category === category.name).length
+            }));
+
+            const subcategoryList = document.createElement('div');
+            const subcategoryListId = `nav-subcategories-${index}`;
+            const isExpanded = expandedCategories.includes(category.name);
+            subcategoryList.className = 'nav-subcategory-list';
+            subcategoryList.id = subcategoryListId;
+            subcategoryList.hidden = !isExpanded;
+
+            const toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'nav-category-toggle';
+            toggle.setAttribute('aria-expanded', String(isExpanded));
+            toggle.setAttribute('aria-controls', subcategoryListId);
+            toggle.setAttribute('aria-label', `${isExpanded ? 'Contraer' : 'Expandir'} ${category.name}`);
+            toggle.title = `${isExpanded ? 'Contraer' : 'Expandir'} ${category.name}`;
+            toggle.innerHTML =
+                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg>';
+            toggle.addEventListener('click', () => {
+                const shouldExpand = toggle.getAttribute('aria-expanded') !== 'true';
+                expandedCategories = shouldExpand
+                    ? [...new Set([...expandedCategories, category.name])]
+                    : expandedCategories.filter(name => name !== category.name);
+                persistAppState();
+                renderNavigation(categories);
+                elements['side-navigation']
+                    .querySelector(`[aria-controls="${subcategoryListId}"]`)
+                    ?.focus({ preventScroll: true });
+            });
+
+            heading.appendChild(toggle);
+            group.append(heading, subcategoryList);
+            elements['side-navigation'].appendChild(group);
+
+            category.subcategories.forEach(subcategory => {
+                subcategoryList.appendChild(createFilterButton({
+                    category: categoryFilterKey(category.name, subcategory),
+                    label: subcategory,
+                    icon: '·',
+                    count: books.filter(book =>
+                        book.category === category.name && book.subcategory === subcategory).length
+                }, category.name));
+            });
         });
     }
 
