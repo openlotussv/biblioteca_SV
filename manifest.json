@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "updated_at": "2026-11-01T01:36:43+00:00",
+    "updated_at": "2026-11-01T01:38:41+00:00",
     "books": [
         {
             "id": "laura-zelada",
@@ -30,14 +30,16 @@
         },
         {
             "id": "menu-prueba",
-            "title": "Menú de prueba",
-            "author": "Material adicional",
-            "description": "Documento PDF adicional disponible en la biblioteca.",
+            "title": "Ajedrez - Elementos Tacticos",
+            "author": "Roberto Grau",
+            "description": "Para muchos el ajedrez es un juego de estrategia. No les falta razón. Aunque en todo\ncaso habría que decir que no es solamente un juego de estrategia, sino también de\nconcepto, de razonamiento",
             "category": "Material adicional",
-            "file": "documentos/MENUPRUEBA.pdf",
-            "size": "1.1 MB",
+            "file": "documentos/menu-prueba.pdf",
+            "size": "1.7 MB",
             "color": "green",
-            "icon": "▧"
+            "icon": "▧",
+            "subcategory": "Educativo",
+            "cover": "img/books/menu-prueba.webp"
         }
     ],
     "categories": [
