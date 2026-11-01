@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#111827">
     <meta name="description" content="Explora y lee documentos PDF de Luna Cloud Book desde cualquier dispositivo.">
     <title>Luna Cloud Book | Biblioteca digital</title>
-    <link rel="stylesheet" href="styles.css?v=20261101-9">
+    <link rel="stylesheet" href="styles.css?v=20261101-11">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" defer></script>
-    <script src="script.js?v=20261101-14" defer></script>
+    <script src="script.js?v=20261101-16" defer></script>
 </head>
 <body>
     <div class="app-shell">
@@ -185,6 +185,14 @@
                         <button class="pdf-fullscreen-exit" id="exit-fullscreen-fallback" type="button"
                                 aria-label="Salir de pantalla completa" title="Salir de pantalla completa" hidden>×</button>
                         <div class="pdf-fullscreen-title" id="pdf-fullscreen-title" aria-hidden="true"></div>
+                        <div class="pdf-fullscreen-zoom" id="pdf-fullscreen-zoom" aria-label="Zoom del documento">
+                            <button class="icon-button" id="fullscreen-zoom-out" type="button" aria-label="Reducir zoom">−</button>
+                            <span id="fullscreen-zoom-label">Ajustar</span>
+                            <button class="icon-button" id="fullscreen-zoom-in" type="button" aria-label="Aumentar zoom">+</button>
+                        </div>
+                        <div class="pdf-fullscreen-page" id="pdf-fullscreen-page" role="status" aria-live="polite">
+                            Página 1
+                        </div>
                         <div class="pdf-page-status" id="pdf-page-status" role="status" aria-live="polite" hidden>
                             Avance guardado en este dispositivo
                         </div>

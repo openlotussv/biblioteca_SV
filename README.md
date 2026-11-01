@@ -79,9 +79,12 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
   brevemente en una esquina inferior. Si el navegador móvil no ofrece pantalla
   completa nativa, el visor usa una vista completa alternativa. La página se
   centra en el espacio disponible y el título del documento aparece discretamente
-  arriba. En PC puedes arrastrar horizontalmente para pasar de página y
-  verticalmente para recorrer una página ampliada; el avance se recuerda por
-  documento en este navegador.
+  arriba. También puedes aumentar o reducir el zoom desde controles dentro de
+  la vista completa; la página se vuelve a renderizar y permite desplazamiento
+  horizontal y vertical cuando supera el espacio visible. La esquina inferior
+  izquierda indica la página actual y el total. En PC puedes arrastrar
+  para recorrer una página ampliada; el avance se recuerda por documento en este
+  navegador.
 - En pantallas pequeñas, abre el menú con el botón superior izquierdo.
 
 PDF.js se carga desde CDN, por lo que la lectura en el visor requiere conexión

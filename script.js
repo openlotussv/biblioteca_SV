@@ -102,7 +102,8 @@
             'page-input', 'page-count', 'prev-page', 'next-page', 'zoom-label',
             'zoom-out', 'zoom-in', 'toggle-fullscreen', 'pdf-stage', 'pdf-render',
             'pdf-page-stack', 'pdf-next-render', 'prev-page-overlay', 'next-page-overlay',
-            'pdf-page-status', 'pdf-fullscreen-title',
+            'pdf-page-status', 'pdf-fullscreen-title', 'pdf-fullscreen-page',
+            'fullscreen-zoom-out', 'fullscreen-zoom-in', 'fullscreen-zoom-label',
             'reader-message', 'reader-error', 'reader-error-detail', 'retry-pdf',
             'back-to-catalog', 'toggle-sidebar', 'close-sidebar', 'sidebar', 'sidebar-backdrop',
             'theme-toggle', 'reading-progress-status', 'bookmark-page', 'bookmark-page-label',
@@ -949,11 +950,15 @@
 
             elements['page-input'].value = String(pageNumber);
             currentPageNumber = pageNumber;
+            elements['pdf-fullscreen-page'].textContent =
+                `Página ${pageNumber} de ${pdfDocument.numPages}`;
             elements['prev-page'].disabled = pageNumber <= 1;
             elements['next-page'].disabled = pageNumber >= pdfDocument.numPages;
             elements['prev-page-overlay'].disabled = pageNumber <= 1;
             elements['next-page-overlay'].disabled = pageNumber >= pdfDocument.numPages;
             elements['zoom-label'].textContent = zoom === 1 ? 'Ajustar' : `${Math.round(zoom * 100)}%`;
+            elements['fullscreen-zoom-label'].textContent =
+                zoom === 1 ? 'Ajustar' : `${Math.round(zoom * 100)}%`;
             saveCurrentPage(pageNumber);
         } catch (error) {
             if (sequence !== renderSequence || error?.name === 'AbortError') return;
@@ -1131,6 +1136,8 @@
         });
         elements['zoom-out'].addEventListener('click', () => changeZoom(-0.15));
         elements['zoom-in'].addEventListener('click', () => changeZoom(0.15));
+        elements['fullscreen-zoom-out'].addEventListener('click', () => changeZoom(-0.15));
+        elements['fullscreen-zoom-in'].addEventListener('click', () => changeZoom(0.15));
         elements['retry-pdf'].addEventListener('click', () => {
             if (activeBook) openBook(activeBook);
         });
