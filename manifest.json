@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "updated_at": "2026-11-01T19:02:38+00:00",
+    "updated_at": "2026-11-01T19:07:22+00:00",
     "books": [
         {
             "id": "laura-zelada",
@@ -131,6 +131,19 @@
             "icon": "▤",
             "subcategory": "Lenguaje y literatura",
             "cover": "img/books/lenguaje-de-primer-grado-tomo-1.webp"
+        },
+        {
+            "id": "lenguaje-de-primer-grado-tomo-2",
+            "title": "LENGUAJE DE PRIMER GRADO TOMO#2",
+            "author": "MINED",
+            "description": "El Salvador Aprende» es tu plataforma ideal para descargar recursos educativos. Te ofrecemos el Libro de Lenguaje de Primer Grado, accesible de forma gratuita y fácil. Aunque no somos propietarios de estos libros, facilitamos el acceso a ellos de manera legítima, siguiendo las directrices del sistema educativo de El Salvador.\n\nEste Libro de Lenguaje de Primer Grado es fundamental para estudiantes que desean mejorar sus habilidades en lectura y escritura. Con actividades prácticas y ejercicios diseñados específicamente para primer grado, este libro es una herramienta invaluable para el avance e",
+            "category": "Libros",
+            "file": "documentos/lenguaje-de-primer-grado-tomo-2.pdf",
+            "size": "13.7 MB",
+            "color": "blue",
+            "icon": "▤",
+            "subcategory": "Lenguaje y literatura",
+            "cover": "img/books/lenguaje-de-primer-grado-tomo-2.webp"
         }
     ],
     "categories": [
