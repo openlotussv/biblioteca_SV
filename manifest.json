@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "updated_at": "2026-11-01T01:58:45+00:00",
+    "updated_at": "2026-11-01T02:02:24+00:00",
     "books": [
         {
             "id": "laura-zelada",
@@ -53,6 +53,19 @@
             "icon": "▤",
             "subcategory": "Psicología",
             "cover": "img/books/por-si-las-voces-vuelven.webp"
+        },
+        {
+            "id": "h-abitos-at-omicos",
+            "title": "Hábitos Atómicos",
+            "author": "James Clear",
+            "description": "Hábitos Atómicos, de James Clear, es un best-seller que propone que los grandes resultados no provienen de cambios drásticos, sino del efecto acumulado de pequeñas mejoras del 1% diarias.  El libro argumenta que el problema no es la falta de fuerza de voluntad, sino un sistema de hábitos mal diseñado, y ofrece un método basado en la psicología y la neurociencia para crear buenos hábitos y eliminar los malos.",
+            "category": "Libros",
+            "file": "documentos/h-abitos-at-omicos.pdf",
+            "size": "2.1 MB",
+            "color": "purple",
+            "icon": "▤",
+            "subcategory": "Autoayuda",
+            "cover": "img/books/h-abitos-at-omicos.webp"
         }
     ],
     "categories": [
