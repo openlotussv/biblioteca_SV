@@ -57,8 +57,10 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
 
 - Busca con el campo superior o presiona `/` para enfocarlo.
 - Filtra por colección desde la navegación lateral o el selector.
+- Cuando una búsqueda o colección tiene más de 10 documentos, navega el catálogo con los controles de paginación.
 - Cambia de página con los controles o las flechas izquierda/derecha.
-- El avance se guarda automáticamente por documento, incluidos libros y material adicional; puedes guardar un marcador independiente para cada documento. Ambos datos se conservan solo en este navegador y dispositivo.
+- La búsqueda, colección, página del catálogo y último documento abierto se recuerdan al volver desde el mismo navegador y dispositivo. El zoom, avance de lectura y marcador también se guardan por documento; el tema y el menú lateral conservan sus preferencias.
+- Los datos guardados viven en `localStorage` de este navegador: no se sincronizan con GitHub ni con otros dispositivos o navegadores.
 - Ajusta el zoom, abre el PDF original o descárgalo.
 - En pantallas pequeñas, abre el menú con el botón superior izquierdo.
 

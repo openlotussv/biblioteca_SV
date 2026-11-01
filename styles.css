@@ -116,7 +116,16 @@ html[data-theme="dark"] .theme-icon-sun { display: block; }
 .catalog-tools { display: flex; align-items: center; gap: 10px; }
 .category-filter { min-height: 36px; max-width: 220px; padding: 0 31px 0 11px; border: 1px solid #e2e7ee; border-radius: 7px; background: #fff; color: #59667a; font-size: 10px; }
 .result-count { min-width: 40px; color: #929cab; font-size: 10px; text-align: right; }
-.book-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 17px; }
+.book-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 17px; scroll-margin-top: 85px; }
+.catalog-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; }
+.pagination-summary { color: #788599; font-size: 10px; }
+.pagination-controls { display: flex; align-items: center; justify-content: center; gap: 5px; }
+.pagination-button { min-width: 34px; min-height: 34px; padding: 0 9px; border: 1px solid #e2e7ee; border-radius: 7px; background: #fff; color: #59667a; font-size: 10px; font-weight: 650; }
+.pagination-button:hover:not(:disabled):not([aria-current="page"]) { border-color: #b8cdf5; background: #f3f7ff; color: var(--blue); }
+.pagination-button[aria-current="page"] { border-color: var(--blue); background: var(--blue); color: #fff; }
+.pagination-button:disabled { cursor: not-allowed; opacity: .5; }
+.pagination-direction { padding: 0 11px; }
+.pagination-ellipsis { padding: 0 2px; color: #929cab; font-size: 12px; }
 .book-card { overflow: hidden; border: 1px solid #e5e9ef; border-radius: 11px; background: #fff; box-shadow: 0 3px 12px #25314808; transition: transform .18s ease,box-shadow .18s ease,border-color .18s ease; }
 .book-card:hover { transform: translateY(-3px); border-color: #cedcf4; box-shadow: 0 10px 24px #25314813; }
 .book-card-art { position: relative; display: grid; min-height: 150px; place-items: center; overflow: hidden; background: linear-gradient(135deg,#eaf2ff,#dce8fa); }
@@ -189,7 +198,8 @@ html[data-theme="dark"] .reader-toolbar,
 html[data-theme="dark"] .button-secondary,
 html[data-theme="dark"] .bookmark-button[aria-pressed="true"],
 html[data-theme="dark"] .icon-button,
-html[data-theme="dark"] .category-filter {
+html[data-theme="dark"] .category-filter,
+html[data-theme="dark"] .pagination-button {
     border-color: var(--line);
     background-color: #1d2736;
     color: var(--ink);
@@ -225,7 +235,9 @@ html[data-theme="dark"] .book-file-size,
 html[data-theme="dark"] .page-total,
 html[data-theme="dark"] #zoom-label,
 html[data-theme="dark"] .page-footer,
-html[data-theme="dark"] .result-count {
+html[data-theme="dark"] .result-count,
+html[data-theme="dark"] .pagination-summary,
+html[data-theme="dark"] .pagination-ellipsis {
     color: #a4afbf;
 }
 html[data-theme="dark"] .book-card-footer { border-top-color: var(--line); }
@@ -249,6 +261,16 @@ html[data-theme="dark"] .reading-progress-status { color: #a4afbf; }
 html[data-theme="dark"] .back-button { color: #a4afbf; }
 html[data-theme="dark"] .button-secondary:hover,
 html[data-theme="dark"] .icon-button:hover:not(:disabled) {
+    border-color: #526782;
+    background-color: #2a394d;
+    color: #dbeafe;
+}
+html[data-theme="dark"] .pagination-button[aria-current="page"] {
+    border-color: var(--blue);
+    background: var(--blue);
+    color: #fff;
+}
+html[data-theme="dark"] .pagination-button:hover:not(:disabled):not([aria-current="page"]) {
     border-color: #526782;
     background-color: #2a394d;
     color: #dbeafe;
@@ -318,6 +340,9 @@ html[data-theme="dark"] .icon-button:hover:not(:disabled) {
     .section-heading { align-items: start; flex-direction: column; gap: 10px; }
     .catalog-tools { width: 100%; justify-content: space-between; }
     .category-filter { max-width: 78%; }
+    .catalog-pagination { align-items: center; flex-direction: column; }
+    .pagination-controls { max-width: 100%; flex-wrap: wrap; }
+    .pagination-button { min-width: 32px; min-height: 32px; padding-right: 7px; padding-left: 7px; }
     .book-grid { grid-template-columns: 1fr; gap: 11px; }
     .book-card { display: grid; grid-template-columns: 100px minmax(0,1fr); min-height: 118px; }
     .book-card-art { min-height: 118px; }

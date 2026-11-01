@@ -44,6 +44,10 @@
     let categoryDefinitions = [];
     const elements = {};
     let activeCategory = 'all';
+    const catalogPageSize = 10;
+    let currentCatalogPage = 1;
+    let catalogLoaded = false;
+    let lastOpenedBookId = null;
     let activeBook = null;
     let pdfDocument = null;
     let loadingTask = null;
@@ -55,8 +59,10 @@
     let currentPageNumber = 1;
     let pdfLayoutReady = false;
     const themeStorageKey = 'genuino-library-theme-v1';
+    const appStateStorageKey = 'luna-cloud-book-state-v1';
     const progressStoragePrefix = 'genuino-library-progress-v1:';
     const bookmarkStoragePrefix = 'luna-cloud-book-bookmark-v1:';
+    const zoomStoragePrefix = 'luna-cloud-book-zoom-v1:';
 
     function byId(id) {
         return document.getElementById(id);
@@ -85,7 +91,7 @@
     function initializeElements() {
         [
             'side-navigation', 'book-search', 'book-count', 'category-count',
-            'catalog-summary', 'category-filter', 'result-count', 'book-grid',
+            'catalog-summary', 'category-filter', 'result-count', 'book-grid', 'catalog-pagination',
             'empty-state', 'catalog-notice', 'local-manager-link', 'catalog-view', 'reader-view', 'reader-title',
             'page-eyebrow', 'page-title-main', 'page-title-accent', 'page-subtitle', 'cover-link', 'cover-image',
             'reader-meta', 'breadcrumb-current', 'open-original', 'download-pdf',
@@ -132,6 +138,75 @@
     function showStorageWarning(message) {
         elements['catalog-notice'].textContent = message;
         elements['catalog-notice'].hidden = false;
+    }
+
+    function restoreAppState() {
+        try {
+            const storedState = localStorage.getItem(appStateStorageKey);
+            if (storedState === null) return;
+            const state = JSON.parse(storedState);
+            if (!state || typeof state !== 'object' || Array.isArray(state)) {
+                throw new Error('El estado guardado no tiene un formato compatible.');
+            }
+            if (typeof state.category === 'string' && state.category.length <= 200) {
+                activeCategory = state.category;
+            }
+            if (typeof state.search === 'string' && state.search.length <= 2000) {
+                elements['book-search'].value = state.search;
+            }
+            if (Number.isInteger(state.catalogPage) && state.catalogPage > 0) {
+                currentCatalogPage = state.catalogPage;
+            }
+            if (typeof state.lastBookId === 'string' && /^[a-z0-9-]+$/.test(state.lastBookId)) {
+                lastOpenedBookId = state.lastBookId;
+            }
+            if (typeof state.sidebarCollapsed === 'boolean') {
+                document.querySelector('.app-shell')
+                    .classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
+            }
+        } catch (error) {
+            console.error('No se pudo restaurar el estado guardado de la biblioteca:', error);
+            showStorageWarning('No se pudo restaurar el estado guardado de esta biblioteca.');
+        }
+    }
+
+    function persistAppState() {
+        const state = {
+            category: activeCategory,
+            search: elements['book-search'].value,
+            catalogPage: currentCatalogPage,
+            sidebarCollapsed: document.querySelector('.app-shell')
+                .classList.contains('sidebar-collapsed'),
+            lastBookId: lastOpenedBookId
+        };
+        try {
+            localStorage.setItem(appStateStorageKey, JSON.stringify(state));
+        } catch (error) {
+            console.error('No se pudo guardar el estado de la biblioteca:', error);
+            showStorageWarning('No se pudo guardar el estado. Revisa el almacenamiento de este navegador.');
+        }
+    }
+
+    function savedZoomFor(book) {
+        try {
+            const storedZoom = Number.parseFloat(localStorage.getItem(zoomStoragePrefix + book.id));
+            return Number.isFinite(storedZoom) && storedZoom >= 0.65 && storedZoom <= 2.5
+                ? storedZoom
+                : 1;
+        } catch (error) {
+            console.error('No se pudo leer el zoom guardado:', error);
+            showStorageWarning('No se pudo leer el zoom guardado de este documento.');
+            return 1;
+        }
+    }
+
+    function saveZoomFor(book) {
+        try {
+            localStorage.setItem(zoomStoragePrefix + book.id, String(zoom));
+        } catch (error) {
+            console.error('No se pudo guardar el zoom del documento:', error);
+            showStorageWarning('No se pudo guardar el zoom de este documento.');
+        }
     }
 
     function savedPageFor(book) {
@@ -296,6 +371,7 @@
             }
             books = loadedBooks;
             categoryDefinitions = loadedCategories;
+            catalogLoaded = true;
             const availableFilters = new Set(['all']);
             loadedCategories.forEach(category => {
                 availableFilters.add(categoryFilterKey(category.name));
@@ -305,12 +381,28 @@
             });
             if (!availableFilters.has(activeCategory)) {
                 activeCategory = 'all';
+                currentCatalogPage = 1;
             }
+            persistAppState();
         } catch (error) {
+            catalogLoaded = true;
             console.error('No se pudo cargar el catálogo publicado:', error);
             elements['catalog-notice'].textContent =
                 'No se pudo actualizar el catálogo desde el repositorio. Se muestra la última lista incluida en esta página.';
             elements['catalog-notice'].hidden = false;
+            const availableFilters = new Set(['all']);
+            const categories = getCategories();
+            categories.forEach(category => {
+                availableFilters.add(categoryFilterKey(category.name));
+                category.subcategories.forEach(subcategory => {
+                    availableFilters.add(categoryFilterKey(category.name, subcategory));
+                });
+            });
+            if (!availableFilters.has(activeCategory)) {
+                activeCategory = 'all';
+                currentCatalogPage = 1;
+                persistAppState();
+            }
         }
     }
 
@@ -386,8 +478,10 @@
             button.append(icon, label, count);
             button.addEventListener('click', () => {
                 activeCategory = item.category;
+                currentCatalogPage = 1;
                 elements['category-filter'].value = item.category;
                 elements['book-search'].value = '';
+                persistAppState();
                 renderNavigation(categories);
                 renderBooks();
                 showCatalog();
@@ -417,14 +511,26 @@
             return matchesCategory && text.includes(search);
         });
 
+        const totalPages = Math.ceil(filtered.length / catalogPageSize);
+        if (catalogLoaded) {
+            const validPage = Math.min(currentCatalogPage, Math.max(totalPages, 1));
+            if (validPage !== currentCatalogPage) {
+                currentCatalogPage = validPage;
+                persistAppState();
+            }
+        }
+        const firstBookIndex = (currentCatalogPage - 1) * catalogPageSize;
+        const visibleBooks = filtered.slice(firstBookIndex, firstBookIndex + catalogPageSize);
+
         elements['book-grid'].replaceChildren();
         elements['catalog-summary'].textContent = search
             ? `Resultados de búsqueda para “${elements['book-search'].value.trim()}”.`
             : 'Selecciona un documento para comenzar a leer.';
         elements['result-count'].textContent = `${filtered.length} ${filtered.length === 1 ? 'documento' : 'documentos'}`;
         elements['empty-state'].hidden = filtered.length !== 0;
+        renderCatalogPagination(totalPages, filtered.length, firstBookIndex, visibleBooks.length);
 
-        filtered.forEach(book => {
+        visibleBooks.forEach(book => {
             const article = document.createElement('article');
             article.className = 'book-card';
 
@@ -478,7 +584,93 @@
         });
     }
 
+    function renderCatalogPagination(totalPages, totalBooks, firstBookIndex, visibleBookCount) {
+        const navigation = elements['catalog-pagination'];
+        navigation.replaceChildren();
+        navigation.hidden = totalPages <= 1;
+        if (navigation.hidden) return;
+
+        const summary = document.createElement('span');
+        summary.className = 'pagination-summary';
+        summary.textContent =
+            `Mostrando ${firstBookIndex + 1}–${firstBookIndex + visibleBookCount} de ${totalBooks} documentos`;
+        const controls = document.createElement('div');
+        controls.className = 'pagination-controls';
+
+        const addPageButton = (page, label, isCurrent = false) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'pagination-button';
+            button.textContent = label;
+            button.setAttribute('aria-label', `Página ${page}`);
+            if (isCurrent) button.setAttribute('aria-current', 'page');
+            button.addEventListener('click', () => {
+                goToCatalogPage(page);
+            });
+            controls.appendChild(button);
+        };
+
+        const addEllipsis = () => {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.setAttribute('aria-hidden', 'true');
+            ellipsis.textContent = '…';
+            controls.appendChild(ellipsis);
+        };
+
+        const previous = document.createElement('button');
+        previous.type = 'button';
+        previous.className = 'pagination-button pagination-direction';
+        previous.textContent = 'Anterior';
+        previous.setAttribute('aria-label', 'Página anterior');
+        previous.disabled = currentCatalogPage === 1;
+        previous.addEventListener('click', () => {
+            goToCatalogPage(currentCatalogPage - 1);
+        });
+        controls.appendChild(previous);
+
+        let firstPage = Math.max(1, currentCatalogPage - 2);
+        let lastPage = Math.min(totalPages, firstPage + 4);
+        firstPage = Math.max(1, lastPage - 4);
+        if (firstPage > 1) {
+            addPageButton(1, '1', currentCatalogPage === 1);
+            if (firstPage > 2) addEllipsis();
+        }
+        for (let page = firstPage; page <= lastPage; page += 1) {
+            addPageButton(page, String(page), currentCatalogPage === page);
+        }
+        if (lastPage < totalPages) {
+            if (lastPage < totalPages - 1) addEllipsis();
+            addPageButton(totalPages, String(totalPages), currentCatalogPage === totalPages);
+        }
+
+        const next = document.createElement('button');
+        next.type = 'button';
+        next.className = 'pagination-button pagination-direction';
+        next.textContent = 'Siguiente';
+        next.setAttribute('aria-label', 'Página siguiente');
+        next.disabled = currentCatalogPage === totalPages;
+        next.addEventListener('click', () => {
+            goToCatalogPage(currentCatalogPage + 1);
+        });
+        controls.appendChild(next);
+
+        navigation.append(summary, controls);
+    }
+
+    function goToCatalogPage(page) {
+        currentCatalogPage = page;
+        persistAppState();
+        renderBooks();
+        elements['catalog-pagination']
+            .querySelector('[aria-current="page"]')
+            ?.focus({ preventScroll: true });
+        elements['book-grid'].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function showCatalog() {
+        lastOpenedBookId = null;
+        persistAppState();
         elements['catalog-view'].hidden = false;
         elements['reader-view'].hidden = true;
         elements['breadcrumb-current'].textContent = 'Catálogo';
@@ -488,9 +680,11 @@
 
     async function openBook(book) {
         activeBook = book;
+        lastOpenedBookId = book.id;
+        persistAppState();
         currentPageNumber = 1;
         pdfLayoutReady = false;
-        zoom = 1;
+        zoom = savedZoomFor(book);
         elements['catalog-view'].hidden = true;
         elements['reader-view'].hidden = false;
         elements['reader-title'].textContent = book.title;
@@ -671,6 +865,7 @@
 
     function changeZoom(amount) {
         zoom = Math.min(2.5, Math.max(0.65, Math.round((zoom + amount) * 100) / 100));
+        if (activeBook) saveZoomFor(activeBook);
         if (pdfDocument) renderPage(Number(elements['page-input'].value) || 1);
     }
 
@@ -692,6 +887,7 @@
 
     function toggleDesktopSidebar() {
         const collapsed = document.querySelector('.app-shell').classList.toggle('sidebar-collapsed');
+        persistAppState();
         elements['toggle-sidebar'].setAttribute('aria-expanded', String(!collapsed));
         elements['toggle-sidebar'].setAttribute(
             'aria-label',
@@ -705,6 +901,8 @@
         });
         elements['book-search'].addEventListener('input', () => {
             activeCategory = elements['category-filter'].value;
+            currentCatalogPage = 1;
+            persistAppState();
             renderNavigation(getCategories());
             renderBooks();
             showCatalog();
@@ -712,6 +910,8 @@
 
         elements['category-filter'].addEventListener('change', event => {
             activeCategory = event.target.value;
+            currentCatalogPage = 1;
+            persistAppState();
             renderNavigation(getCategories());
             renderBooks();
         });
@@ -815,15 +1015,27 @@
         initializeElements();
         initializeTheme();
         connectEvents();
+        restoreAppState();
         const mobileLayout = window.matchMedia('(max-width: 760px)').matches;
-        elements['toggle-sidebar'].setAttribute('aria-expanded', String(!mobileLayout));
+        const sidebarCollapsed = !mobileLayout
+            && document.querySelector('.app-shell').classList.contains('sidebar-collapsed');
+        elements['toggle-sidebar'].setAttribute('aria-expanded', String(!mobileLayout && !sidebarCollapsed));
         elements['toggle-sidebar'].setAttribute(
             'aria-label',
-            mobileLayout ? 'Abrir navegación' : 'Plegar navegación'
+            mobileLayout ? 'Abrir navegación' : sidebarCollapsed ? 'Expandir navegación' : 'Plegar navegación'
         );
         elements['local-manager-link'].hidden =
             !['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
         initializeCatalog();
-        Promise.all([loadCatalog(), loadPageSettings()]).then(initializeCatalog);
+        Promise.all([loadCatalog(), loadPageSettings()]).then(() => {
+            initializeCatalog();
+            const lastBook = books.find(book => book.id === lastOpenedBookId);
+            if (lastBook) {
+                openBook(lastBook);
+            } else if (lastOpenedBookId !== null) {
+                lastOpenedBookId = null;
+                persistAppState();
+            }
+        });
     }, { once: true });
 })();
