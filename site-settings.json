@@ -1,8 +1,8 @@
 {
-  "version": 1,
-  "eyebrow": "LECTURA EN LÍNEA",
-  "title": "Tu biblioteca",
-  "accent": "a un clic.",
-  "subtitle": "Explora el catálogo y continúa leyendo desde cualquier dispositivo.",
-  "cover": "img/portada.jpg"
+    "version": 1,
+    "eyebrow": "LECTURA EN LÍNEA",
+    "title": "Tu biblioteca en SANTEIN",
+    "accent": "a un clic.",
+    "subtitle": "Explora el catálogo y continúa leyendo desde cualquier dispositivo.",
+    "cover": "img/portada.jpg"
 }
