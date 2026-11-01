@@ -102,7 +102,7 @@
             'page-input', 'page-count', 'prev-page', 'next-page', 'zoom-label',
             'zoom-out', 'zoom-in', 'toggle-fullscreen', 'pdf-stage', 'pdf-render',
             'pdf-page-stack', 'pdf-next-render', 'prev-page-overlay', 'next-page-overlay',
-            'pdf-page-status', 'pdf-fullscreen-title', 'pdf-fullscreen-page',
+            'pdf-page-status', 'pdf-page-status-text', 'pdf-fullscreen-title', 'pdf-fullscreen-page',
             'fullscreen-zoom-out', 'fullscreen-zoom-in', 'fullscreen-zoom-label',
             'reader-message', 'reader-error', 'reader-error-detail', 'retry-pdf',
             'back-to-catalog', 'toggle-sidebar', 'close-sidebar', 'sidebar', 'sidebar-backdrop',
@@ -237,24 +237,30 @@
 
     function saveCurrentPage(pageNumber) {
         if (!activeBook) return;
+        const status = elements['pdf-page-status'];
         try {
             localStorage.setItem(progressStoragePrefix + activeBook.id, String(pageNumber));
             elements['reading-progress-status'].textContent =
                 'Avance guardado en este navegador y dispositivo.';
             elements['reading-progress-status'].hidden = false;
+            status.dataset.state = 'saved';
+            status.setAttribute('aria-label', `Página ${pageNumber} de ${pdfDocument.numPages} guardada en este dispositivo`);
+            elements['pdf-page-status-text'].textContent =
+                `Página ${pageNumber} de ${pdfDocument.numPages} · guardada en este dispositivo`;
         } catch (error) {
             console.error('No se pudo guardar el avance de lectura:', error);
             elements['reading-progress-status'].textContent =
                 'No se pudo guardar el avance. Revisa el almacenamiento de este navegador.';
             elements['reading-progress-status'].hidden = false;
+            status.dataset.state = 'error';
+            status.setAttribute('aria-label', 'No se pudo guardar el avance de lectura');
+            elements['pdf-page-status-text'].textContent =
+                `Página ${pageNumber} de ${pdfDocument.numPages} · no se pudo guardar`;
         }
-        elements['pdf-page-status'].textContent = elements['reading-progress-status'].textContent.includes('No se pudo')
-            ? `Página ${pageNumber} de ${pdfDocument.numPages} · no se pudo guardar`
-            : `Página ${pageNumber} de ${pdfDocument.numPages} · guardada en este dispositivo`;
-        elements['pdf-page-status'].hidden = false;
+        status.hidden = false;
         clearTimeout(pageStatusTimer);
         pageStatusTimer = setTimeout(() => {
-            elements['pdf-page-status'].hidden = true;
+            status.hidden = true;
             pageStatusTimer = null;
         }, 3000);
         updateBookmarkControl();
@@ -790,7 +796,10 @@
         elements['next-page'].disabled = true;
         elements['prev-page-overlay'].disabled = true;
         elements['next-page-overlay'].disabled = true;
-        elements['pdf-page-status'].textContent = 'Cargando página…';
+        clearTimeout(pageStatusTimer);
+        pageStatusTimer = null;
+        elements['pdf-page-status'].hidden = true;
+        elements['pdf-page-status-text'].textContent = 'Cargando página…';
         elements['zoom-label'].textContent = 'Ajustar';
         document.title = `${book.title} | Luna Cloud Book`;
         elements['pdf-fullscreen-title'].textContent = book.title;
@@ -870,6 +879,13 @@
         let currentTask = null;
         let renderCanvas = null;
         try {
+            const pageStatus = elements['pdf-page-status'];
+            clearTimeout(pageStatusTimer);
+            pageStatusTimer = null;
+            pageStatus.dataset.state = 'saving';
+            pageStatus.setAttribute('aria-label', `Guardando el avance de la página ${pageNumber}`);
+            elements['pdf-page-status-text'].textContent = `Guardando página ${pageNumber}…`;
+            pageStatus.hidden = false;
             const page = await pdfDocument.getPage(pageNumber);
             if (sequence !== renderSequence) return;
 
@@ -963,6 +979,7 @@
         } catch (error) {
             if (sequence !== renderSequence || error?.name === 'AbortError') return;
             if (error?.name !== 'RenderingCancelledException') {
+                elements['pdf-page-status'].hidden = true;
                 console.error('Error al renderizar la página:', error);
                 showReaderError('No se pudo mostrar esta página del documento.');
             }

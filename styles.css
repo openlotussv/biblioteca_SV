@@ -205,9 +205,11 @@ html[data-theme="dark"] .theme-icon-sun { display: block; }
 .pdf-fullscreen-title { display: none; }
 .pdf-fullscreen-zoom { display: none; }
 .pdf-fullscreen-page { display: none; }
+.pdf-page-status-icon { display: none; }
 .pdf-page-status { position: absolute; z-index: 5; right: 18px; bottom: 18px; left: auto; display: none; max-width: min(420px,calc(100% - 36px)); overflow: hidden; padding: 8px 13px; border: 1px solid #ffffff5c; border-radius: 10px; background: #172235d9; color: #fff; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; backdrop-filter: blur(8px); }
-.pdf-stage:fullscreen, .pdf-stage.pdf-stage--fullscreen-fallback { width: 100vw; height: 100vh; height: 100dvh; min-height: 100vh; min-height: 100dvh; max-height: 100vh; max-height: 100dvh; align-items: safe center; justify-content: safe center; padding: 64px 24px 76px; border: 0; border-radius: 0; background: #111827; }
+.pdf-stage:fullscreen, .pdf-stage.pdf-stage--fullscreen-fallback { width: 100vw; height: 100vh; height: 100dvh; min-height: 100vh; min-height: 100dvh; max-height: 100vh; max-height: 100dvh; align-items: safe center; justify-content: safe center; padding: 64px 24px 76px; border: 0; border-radius: 0; background: #111827; perspective: none; }
 .pdf-stage.pdf-stage--fullscreen-fallback { position: fixed; inset: 0; z-index: 50; overflow: auto; }
+.pdf-stage:fullscreen .pdf-page-stack, .pdf-stage.pdf-stage--fullscreen-fallback .pdf-page-stack { perspective: 1800px; }
 .pdf-stage:fullscreen .pdf-fullscreen-title, .pdf-stage.pdf-stage--fullscreen-fallback .pdf-fullscreen-title { position: fixed; z-index: 6; top: max(10px,env(safe-area-inset-top)); right: 62px; left: 18px; display: block; overflow: hidden; color: #fff; font-size: 14px; font-weight: 650; line-height: 22px; text-align: center; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
 .pdf-stage:fullscreen .pdf-fullscreen-zoom, .pdf-stage.pdf-stage--fullscreen-fallback .pdf-fullscreen-zoom { position: fixed; z-index: 6; bottom: max(14px,env(safe-area-inset-bottom)); left: 50%; display: flex; align-items: center; gap: 12px; padding: 7px 10px; transform: translateX(-50%); border: 1px solid #ffffff3d; border-radius: 12px; background: #172235e8; color: #fff; box-shadow: 0 4px 18px #0005; backdrop-filter: blur(10px); }
 .pdf-stage:fullscreen .pdf-fullscreen-page, .pdf-stage.pdf-stage--fullscreen-fallback .pdf-fullscreen-page { position: fixed; z-index: 6; bottom: max(22px,env(safe-area-inset-bottom)); left: 18px; display: block; padding: 9px 12px; border: 1px solid #ffffff3d; border-radius: 10px; background: #172235e8; color: #fff; font-size: 12px; font-weight: 650; line-height: 20px; box-shadow: 0 4px 18px #0005; backdrop-filter: blur(10px); pointer-events: none; }
@@ -417,7 +419,27 @@ html[data-theme="dark"] .pagination-button:hover:not(:disabled):not([aria-curren
     .pdf-stage:fullscreen .pdf-fullscreen-zoom, .pdf-stage.pdf-stage--fullscreen-fallback .pdf-fullscreen-zoom { bottom: max(12px,env(safe-area-inset-bottom)); gap: 8px; padding: 6px 8px; }
     .pdf-fullscreen-zoom .icon-button { width: 36px; height: 36px; flex-basis: 36px; }
     .pdf-stage:fullscreen .pdf-fullscreen-page, .pdf-stage.pdf-stage--fullscreen-fallback .pdf-fullscreen-page { bottom: max(18px,env(safe-area-inset-bottom)); left: 12px; padding: 7px 9px; font-size: 11px; }
+    .pdf-stage:fullscreen .pdf-page-status:not([hidden]),
+    .pdf-stage.pdf-stage--fullscreen-fallback .pdf-page-status:not([hidden]) {
+        z-index: 8;
+        right: 12px;
+        bottom: max(18px,env(safe-area-inset-bottom));
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        padding: 0;
+        border-radius: 50%;
+        font-size: 0;
+    }
+    .pdf-page-status-icon { display: grid; width: 22px; height: 22px; place-items: center; color: #fff; font-size: 18px; font-weight: 800; line-height: 1; }
+    .pdf-page-status[data-state="saving"] .pdf-page-status-icon { width: 17px; height: 17px; border: 2px solid #ffffff55; border-top-color: #fff; border-radius: 50%; animation: pdf-status-spin .7s linear infinite; }
+    .pdf-page-status[data-state="saved"] .pdf-page-status-icon::before { content: "✓"; }
+    .pdf-page-status[data-state="error"] { border-color: #f3a5a5; background: #7f2727ed; }
+    .pdf-page-status[data-state="error"] .pdf-page-status-icon::before { content: "!"; }
 }
+
+@keyframes pdf-status-spin { to { transform: rotate(360deg); } }
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
