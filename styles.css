@@ -178,8 +178,8 @@ html[data-theme="dark"] .theme-icon-sun { display: block; }
 .page-total, #zoom-label { color: #7b8798; font-size: 10px; }
 .page-total strong { color: #364256; }
 #zoom-label { min-width: 45px; text-align: center; }
-.pdf-stage { position: relative; display: flex; min-height: 440px; max-height: 74vh; justify-content: center; overflow: auto; padding: 20px; border: 1px solid #e3e7ed; border-top: 0; border-radius: 0 0 9px 9px; background: #e9edf3; }
-#pdf-render { display: none; height: auto; max-width: none; transform: translateZ(0); backface-visibility: hidden; background: #fff; box-shadow: 0 5px 18px #28364b26; }
+.pdf-stage { position: relative; display: flex; min-height: 440px; max-height: 74vh; align-items: flex-start; justify-content: safe center; overflow: auto; padding: 20px; border: 1px solid #e3e7ed; border-top: 0; border-radius: 0 0 9px 9px; background: #e9edf3; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y pinch-zoom; }
+#pdf-render { display: none; height: auto; max-width: none; flex: 0 0 auto; transform: translateZ(0); backface-visibility: hidden; background: #fff; box-shadow: 0 5px 18px #28364b26; touch-action: pan-x pan-y pinch-zoom; }
 #pdf-render.pdf-swipe-enabled { touch-action: pan-y pinch-zoom; }
 .reader-message, .reader-error { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 25px; color: #68758a; text-align: center; }
 .reader-message strong, .reader-error strong { margin-top: 12px; color: #3d4a5e; font-size: 13px; }

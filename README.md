@@ -62,6 +62,9 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
 - La búsqueda, colección, página del catálogo y último documento abierto se recuerdan al volver desde el mismo navegador y dispositivo. El zoom, avance de lectura y marcador también se guardan por documento; el tema y el menú lateral conservan sus preferencias.
 - Los datos guardados viven en `localStorage` de este navegador: no se sincronizan con GitHub ni con otros dispositivos o navegadores.
 - Ajusta el zoom, abre el PDF original o descárgalo.
+- En el móvil, amplía con los controles y desliza la página para recorrerla
+  horizontal o verticalmente; al ajustar la página, un deslizamiento lateral
+  cambia de página.
 - En pantallas pequeñas, abre el menú con el botón superior izquierdo.
 
 PDF.js se carga desde CDN, por lo que la lectura en el visor requiere conexión
