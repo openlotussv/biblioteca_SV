@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#111827">
     <meta name="description" content="Explora y lee documentos PDF de Luna Cloud Book desde cualquier dispositivo.">
     <title>Luna Cloud Book | Biblioteca digital</title>
-    <link rel="stylesheet" href="styles.css?v=20261101-3">
+    <link rel="stylesheet" href="styles.css?v=20261101-5">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" defer></script>
-    <script src="script.js?v=20261101-5" defer></script>
+    <script src="script.js?v=20261101-10" defer></script>
 </head>
 <body>
     <div class="app-shell">
@@ -178,7 +178,17 @@
                             <p id="reader-error-detail">Comprueba tu conexión e inténtalo de nuevo.</p>
                             <button class="button button-secondary" id="retry-pdf" type="button">Reintentar</button>
                         </div>
-                        <canvas id="pdf-render" aria-label="Página del documento PDF"></canvas>
+                        <button class="pdf-side-button pdf-side-button-previous" id="prev-page-overlay"
+                                type="button" aria-label="Página anterior" title="Página anterior" disabled>‹</button>
+                        <button class="pdf-side-button pdf-side-button-next" id="next-page-overlay"
+                                type="button" aria-label="Página siguiente" title="Página siguiente" disabled>›</button>
+                        <div class="pdf-page-status" id="pdf-page-status" role="status" aria-live="polite">
+                            Avance guardado en este dispositivo
+                        </div>
+                        <div class="pdf-page-stack" id="pdf-page-stack">
+                            <canvas id="pdf-next-render" aria-hidden="true" hidden></canvas>
+                            <canvas id="pdf-render" aria-label="Página del documento PDF"></canvas>
+                        </div>
                     </div>
                 </section>
 

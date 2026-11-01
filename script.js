@@ -53,6 +53,7 @@
     let pdfDocument = null;
     let loadingTask = null;
     let renderTask = null;
+    let pageTurnAnimation = null;
     let renderSequence = 0;
     let zoom = 1;
     let resizeTimer = null;
@@ -99,6 +100,8 @@
             'reader-meta', 'breadcrumb-current', 'open-original', 'download-pdf',
             'page-input', 'page-count', 'prev-page', 'next-page', 'zoom-label',
             'zoom-out', 'zoom-in', 'toggle-fullscreen', 'pdf-stage', 'pdf-render',
+            'pdf-page-stack', 'pdf-next-render', 'prev-page-overlay', 'next-page-overlay',
+            'pdf-page-status',
             'reader-message', 'reader-error', 'reader-error-detail', 'retry-pdf',
             'back-to-catalog', 'toggle-sidebar', 'close-sidebar', 'sidebar', 'sidebar-backdrop',
             'theme-toggle', 'reading-progress-status', 'bookmark-page', 'bookmark-page-label',
@@ -237,11 +240,14 @@
             elements['reading-progress-status'].textContent =
                 'Avance guardado en este navegador y dispositivo.';
             elements['reading-progress-status'].hidden = false;
+            elements['pdf-page-status'].textContent =
+                `Página ${pageNumber} de ${pdfDocument.numPages} · guardada en este dispositivo`;
         } catch (error) {
             console.error('No se pudo guardar el avance de lectura:', error);
             elements['reading-progress-status'].textContent =
                 'No se pudo guardar el avance. Revisa el almacenamiento de este navegador.';
             elements['reading-progress-status'].hidden = false;
+            elements['pdf-page-status'].textContent = `Página ${pageNumber} de ${pdfDocument.numPages}`;
         }
         updateBookmarkControl();
     }
@@ -774,6 +780,9 @@
         elements['page-input'].max = '1';
         elements['prev-page'].disabled = true;
         elements['next-page'].disabled = true;
+        elements['prev-page-overlay'].disabled = true;
+        elements['next-page-overlay'].disabled = true;
+        elements['pdf-page-status'].textContent = 'Cargando página…';
         elements['zoom-label'].textContent = 'Ajustar';
         document.title = `${book.title} | Luna Cloud Book`;
         closeSidebar();
@@ -797,6 +806,7 @@
             elements['page-count'].textContent = String(pdfDocument.numPages);
             elements['page-input'].max = String(pdfDocument.numPages);
             elements['next-page'].disabled = pdfDocument.numPages <= 1;
+            elements['next-page-overlay'].disabled = pdfDocument.numPages <= 1;
             updateBookmarkControl();
             const savedPage = savedPageFor(book);
             const resumePage = Math.min(savedPage, pdfDocument.numPages);
@@ -828,9 +838,21 @@
         }
     }
 
-    async function renderPage(pageNumber) {
+    function resetPageTurn() {
+        if (pageTurnAnimation) {
+            pageTurnAnimation.cancel();
+            pageTurnAnimation = null;
+        }
+        elements['pdf-render'].style.transform = '';
+        elements['pdf-render'].style.transformOrigin = '';
+        elements['pdf-render'].style.boxShadow = '';
+        elements['pdf-next-render'].hidden = true;
+    }
+
+    async function renderPage(pageNumber, turnDirection = 0) {
         if (!pdfDocument || !activeBook) return;
         const sequence = ++renderSequence;
+        resetPageTurn();
         if (renderTask) {
             renderTask.cancel();
             renderTask = null;
@@ -865,22 +887,68 @@
             if (sequence !== renderSequence) return;
 
             const canvas = elements['pdf-render'];
-            canvas.width = renderCanvas.width;
-            canvas.height = renderCanvas.height;
-            canvas.style.width = `${Math.floor(viewport.width)}px`;
-            canvas.style.height = `${Math.floor(viewport.height)}px`;
             canvas.classList.toggle('pdf-swipe-enabled', viewport.width <= availableWidth);
-            const visibleContext = canvas.getContext('2d', { alpha: false });
-            if (!visibleContext) throw new Error('No se pudo actualizar el visor PDF.');
-            visibleContext.drawImage(renderCanvas, 0, 0);
+
+            if (turnDirection !== 0 && currentPageNumber !== pageNumber
+                && typeof canvas.animate === 'function') {
+                const nextCanvas = elements['pdf-next-render'];
+                nextCanvas.width = renderCanvas.width;
+                nextCanvas.height = renderCanvas.height;
+                nextCanvas.style.width = `${Math.floor(viewport.width)}px`;
+                nextCanvas.style.height = `${Math.floor(viewport.height)}px`;
+                const nextContext = nextCanvas.getContext('2d', { alpha: false });
+                if (!nextContext) throw new Error('No se pudo preparar la animación de página.');
+                nextContext.drawImage(renderCanvas, 0, 0);
+                elements['pdf-page-stack'].style.width = `${Math.floor(viewport.width)}px`;
+                elements['pdf-page-stack'].style.height = `${Math.floor(viewport.height)}px`;
+                nextCanvas.hidden = false;
+                canvas.style.transformOrigin = turnDirection > 0 ? 'left center' : 'right center';
+                pageTurnAnimation = canvas.animate(
+                    [
+                        { transform: 'rotateY(0deg)', boxShadow: '0 5px 18px #28364b26' },
+                        {
+                            transform: `rotateY(${turnDirection > 0 ? '-180deg' : '180deg'})`,
+                            boxShadow: '0 2px 6px #10182710'
+                        }
+                    ],
+                    {
+                        duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 420,
+                        easing: 'cubic-bezier(.45, 0, .2, 1)',
+                        fill: 'forwards'
+                    }
+                );
+                await pageTurnAnimation.finished;
+                if (sequence !== renderSequence) return;
+                canvas.width = renderCanvas.width;
+                canvas.height = renderCanvas.height;
+                canvas.style.width = `${Math.floor(viewport.width)}px`;
+                canvas.style.height = `${Math.floor(viewport.height)}px`;
+                const visibleContext = canvas.getContext('2d', { alpha: false });
+                if (!visibleContext) throw new Error('No se pudo actualizar el visor PDF.');
+                visibleContext.drawImage(renderCanvas, 0, 0);
+                resetPageTurn();
+            } else {
+                canvas.width = renderCanvas.width;
+                canvas.height = renderCanvas.height;
+                canvas.style.width = `${Math.floor(viewport.width)}px`;
+                canvas.style.height = `${Math.floor(viewport.height)}px`;
+                elements['pdf-page-stack'].style.width = `${Math.floor(viewport.width)}px`;
+                elements['pdf-page-stack'].style.height = `${Math.floor(viewport.height)}px`;
+                const visibleContext = canvas.getContext('2d', { alpha: false });
+                if (!visibleContext) throw new Error('No se pudo actualizar el visor PDF.');
+                visibleContext.drawImage(renderCanvas, 0, 0);
+            }
 
             elements['page-input'].value = String(pageNumber);
             currentPageNumber = pageNumber;
             elements['prev-page'].disabled = pageNumber <= 1;
             elements['next-page'].disabled = pageNumber >= pdfDocument.numPages;
+            elements['prev-page-overlay'].disabled = pageNumber <= 1;
+            elements['next-page-overlay'].disabled = pageNumber >= pdfDocument.numPages;
             elements['zoom-label'].textContent = zoom === 1 ? 'Ajustar' : `${Math.round(zoom * 100)}%`;
             saveCurrentPage(pageNumber);
         } catch (error) {
+            if (sequence !== renderSequence || error?.name === 'AbortError') return;
             if (error?.name !== 'RenderingCancelledException') {
                 console.error('Error al renderizar la página:', error);
                 showReaderError('No se pudo mostrar esta página del documento.');
@@ -903,6 +971,7 @@
 
     function cancelCurrentPdf() {
         renderSequence++;
+        resetPageTurn();
         if (renderTask) {
             renderTask.cancel();
             renderTask = null;
@@ -926,7 +995,11 @@
         const number = Number.parseInt(value, 10);
         if (!Number.isFinite(number)) return;
         const pageNumber = Math.min(Math.max(number, 1), pdfDocument.numPages);
-        renderPage(pageNumber);
+        const currentPage = currentPageNumber;
+        const direction = Math.abs(pageNumber - currentPage) === 1
+            ? (pageNumber > currentPage ? 1 : -1)
+            : 0;
+        renderPage(pageNumber, direction);
     }
 
     function changeZoom(amount) {
@@ -985,31 +1058,61 @@
         elements['back-to-catalog'].addEventListener('click', showCatalog);
         elements['bookmark-page'].addEventListener('click', togglePageBookmark);
         elements['prev-page'].addEventListener('click', () => {
-            goToPage((Number(elements['page-input'].value) || 1) - 1);
+            goToPage(currentPageNumber - 1);
         });
         elements['next-page'].addEventListener('click', () => {
-            goToPage((Number(elements['page-input'].value) || 1) + 1);
+            goToPage(currentPageNumber + 1);
         });
-        let touchStart = null;
+        elements['prev-page-overlay'].addEventListener('click', () => {
+            goToPage(currentPageNumber - 1);
+        });
+        elements['next-page-overlay'].addEventListener('click', () => {
+            goToPage(currentPageNumber + 1);
+        });
+        let dragStart = null;
         elements['pdf-render'].addEventListener('pointerdown', event => {
-            if (event.pointerType !== 'touch' || !event.isPrimary
-                || !elements['pdf-render'].classList.contains('pdf-swipe-enabled')) {
-                touchStart = null;
+            const pageFits = elements['pdf-render'].classList.contains('pdf-swipe-enabled');
+            if (!event.isPrimary || (event.pointerType !== 'mouse' && !pageFits)) {
+                dragStart = null;
                 return;
             }
-            touchStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+            dragStart = {
+                x: event.clientX,
+                y: event.clientY,
+                scrollLeft: elements['pdf-stage'].scrollLeft,
+                scrollTop: elements['pdf-stage'].scrollTop,
+                pointerId: event.pointerId,
+                pointerType: event.pointerType,
+                pageFits
+            };
         });
-        elements['pdf-render'].addEventListener('pointerup', event => {
-            if (!touchStart || event.pointerId !== touchStart.pointerId) return;
-            const deltaX = event.clientX - touchStart.x;
-            const deltaY = event.clientY - touchStart.y;
-            touchStart = null;
-            if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) return;
-            const currentPage = Number(elements['page-input'].value) || 1;
+        document.addEventListener('pointermove', event => {
+            if (!dragStart || event.pointerId !== dragStart.pointerId
+                || dragStart.pointerType !== 'mouse') return;
+            const deltaX = event.clientX - dragStart.x;
+            const deltaY = event.clientY - dragStart.y;
+            if ((!dragStart.pageFits || Math.abs(deltaY) > Math.abs(deltaX) * 1.25)
+                && Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 6) {
+                elements['pdf-stage'].classList.add('pdf-dragging');
+                elements['pdf-stage'].scrollLeft = dragStart.scrollLeft - deltaX;
+                elements['pdf-stage'].scrollTop = dragStart.scrollTop - deltaY;
+            }
+        });
+        document.addEventListener('pointerup', event => {
+            if (!dragStart || event.pointerId !== dragStart.pointerId) return;
+            const deltaX = event.clientX - dragStart.x;
+            const deltaY = event.clientY - dragStart.y;
+            const { pageFits } = dragStart;
+            dragStart = null;
+            elements['pdf-stage'].classList.remove('pdf-dragging');
+            if (!pageFits || Math.abs(deltaX) < 52
+                || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) return;
+            const currentPage = currentPageNumber;
             goToPage(currentPage + (deltaX < 0 ? 1 : -1));
         });
-        elements['pdf-render'].addEventListener('pointercancel', () => {
-            touchStart = null;
+        document.addEventListener('pointercancel', () => {
+            dragStart = null;
+            elements['pdf-stage'].classList.remove('pdf-dragging');
         });
         elements['page-input'].addEventListener('change', event => goToPage(event.target.value));
         elements['page-input'].addEventListener('keydown', event => {
@@ -1048,11 +1151,11 @@
                 elements['book-search'].focus();
             }
             if (elements['reader-view'].hidden || ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-            if (event.key === 'ArrowLeft' && pdfDocument && Number(elements['page-input'].value) > 1) {
-                goToPage(Number(elements['page-input'].value) - 1);
+            if (event.key === 'ArrowLeft' && pdfDocument && currentPageNumber > 1) {
+                goToPage(currentPageNumber - 1);
             } else if (event.key === 'ArrowRight' && pdfDocument
-                && Number(elements['page-input'].value) < pdfDocument.numPages) {
-                goToPage(Number(elements['page-input'].value) + 1);
+                && currentPageNumber < pdfDocument.numPages) {
+                goToPage(currentPageNumber + 1);
             } else if (event.key === 'Escape') {
                 closeSidebar();
             }
@@ -1065,13 +1168,13 @@
         }
 
         if ('ResizeObserver' in window) {
-            const stageObserver = new ResizeObserver(entries => {
+            const readerObserver = new ResizeObserver(entries => {
                 const width = Math.round(entries[0].contentRect.width);
                 if (width === lastPdfStageWidth) return;
                 lastPdfStageWidth = width;
                 schedulePdfFit();
             });
-            stageObserver.observe(elements['pdf-stage']);
+            readerObserver.observe(elements['reader-view']);
         } else {
             window.addEventListener('resize', schedulePdfFit);
         }

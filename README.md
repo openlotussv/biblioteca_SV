@@ -70,6 +70,13 @@ conservar sus mayúsculas y minúsculas porque GitHub Pages las distingue.
 - En el móvil, amplía con los controles y desliza la página para recorrerla
   horizontal o verticalmente; al ajustar la página, un deslizamiento lateral
   cambia de página.
+- El cambio de página incluye una animación ligera de giro en pantallas táctiles
+  y de escritorio; saltar varias páginas, cambiar zoom o redimensionar evita la
+  animación para mantener el visor ágil.
+- Los botones laterales del visor también cambian de página; en pantalla completa
+  permanecen a los lados y muestran el avance guardado. En PC puedes arrastrar
+  horizontalmente para pasar de página y verticalmente para recorrer una página
+  ampliada; el avance se recuerda por documento en este navegador.
 - En pantallas pequeñas, abre el menú con el botón superior izquierdo.
 
 PDF.js se carga desde CDN, por lo que la lectura en el visor requiere conexión
